@@ -3,7 +3,7 @@ import cupy.cuda.memory
 import numpy as np
 
 
-from boolean_networks import cuda_binary_core as binary_core
+import cuda_binary_core
 
 
 def get_update_inputs(states, connections):
@@ -12,7 +12,7 @@ def get_update_inputs(states, connections):
 
 
 def state_update(states, functions, connections):
-    return binary_core.apply_binary_function(get_update_inputs(states, connections), functions)
+    return cuda_binary_core.apply_binary_function(get_update_inputs(states, connections), functions)
 
 
 def measure_limit_cycle_lengths(init_state, functions, connections, max_n_iter=1000, verbose=False, dry_term=1000):

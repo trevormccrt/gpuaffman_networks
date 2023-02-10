@@ -1,6 +1,6 @@
 import numpy as np
 
-from boolean_networks import binary_core
+import binary_core
 
 
 def test_conversion():
