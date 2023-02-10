@@ -5,7 +5,7 @@ import json
 import numpy as np
 import os
 import sys
-sys.path.append(os.path.join(os.getenv("HOME"), "brain_research/"))
+sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
 os.environ["CUPY_ACCELERATORS"] = "cutensor"
 

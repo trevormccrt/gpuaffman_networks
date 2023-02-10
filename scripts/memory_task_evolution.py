@@ -1,7 +1,11 @@
+import sys
+import os
+sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
+
 import cupy as cp
 import datetime
 import numpy as np
-import os
+
 import pickle
 
 import cupy.cuda.device
