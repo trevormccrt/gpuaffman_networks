@@ -19,8 +19,7 @@ def sample_breeding_pairs(data, n_children):
     return select_breeding_pairs_from_indicies(data, indicies)
 
 
-def pair_breed_mix(population, n_children, p_first=0.5):
-    first_parents, second_parents = sample_breeding_pairs(population, n_children)
+def pair_breed_swap(first_parents, second_parents,  p_first=0.5):
     from_first_ind = cp.argwhere(cp.tile(cp.expand_dims(cp.random.binomial(1, p_first, first_parents.shape[:-1]), -1), first_parents.shape[-1])==1)
     children = cp.copy(second_parents)
     slices = tuple(from_first_ind[:, i] for i in range(cp.ndim(children)))
@@ -28,8 +27,7 @@ def pair_breed_mix(population, n_children, p_first=0.5):
     return children
 
 
-def pair_breed_random(population, n_children, p_first=0.5):
-    first_parents, second_parents = sample_breeding_pairs(population, n_children)
+def pair_breed_random(first_parents, second_parents, p_first=0.5):
     from_first_ind = cp.argwhere(cp.random.binomial(1, p_first, first_parents.shape) == 1)
     children = cp.copy(second_parents)
     slices = tuple(from_first_ind[:, i] for i in range(cp.ndim(children)))
