@@ -1,0 +1,10 @@
+*.pyc
+*.idea
+*.json
+*.npy
+*.xml
+.idea/*
+.DS_Store
+./boolean_networks/
+boolean_networks/.ipynb_checkpoints/*
+*.mp4
