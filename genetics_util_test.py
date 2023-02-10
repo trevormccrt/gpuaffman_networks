@@ -1,6 +1,6 @@
 import cupy as cp
 
-import ragged_genetics
+import genetics_util
 
 
 def test_sample_breeding_pairs():

@@ -35,3 +35,7 @@ def pair_breed_random(population, n_children, p_first=0.5, automaton_dimension=1
     slices = tuple(from_first_ind[:, i] for i in range(cp.ndim(children)))
     children[slices] = first_parents[slices]
     return children
+
+
+def breed_mix(first_parents, second_parents, p_first=0.5):
+    
