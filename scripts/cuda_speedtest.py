@@ -6,12 +6,15 @@ import numpy as np
 import os
 import time
 
+
 import binary_core
 
 os.environ["CUPY_ACCELERATORS"] = "cutensor"
 
 function_dimension = 8
+
 batch_sizes = 1 * np.floor(np.logspace(start=3, stop=8, num=15)).astype(np.int64)
+
 all_times_numpy = []
 all_times_cupy = []
 dtype = np.bool_
