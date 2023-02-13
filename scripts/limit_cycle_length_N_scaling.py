@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
 os.environ["CUPY_ACCELERATORS"] = "cutensor"
 
-from boolean_networks import general_network, binary_core
+import general_network, binary_core
 
 out_dir = os.path.join(os.getenv("HOME"), "boolean_network_data/limit_cycle_lengths/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)

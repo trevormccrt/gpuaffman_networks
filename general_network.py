@@ -30,7 +30,7 @@ def measure_limit_cycle_lengths(init_state, functions, connections, max_n_iter=1
             new_state = state_update(all_states[i, :, :], functions[still_evolving, :, :], connections[still_evolving, :, :])
             equal_indicies = np.argwhere(np.all(np.equal(new_state, all_states[:i + 1, :, :]), -1))
             if isinstance(equal_indicies, cp.ndarray):
-                equal_indicies = np.asnumpy(equal_indicies)
+                equal_indicies = cp.asnumpy(equal_indicies)
             this_indicies = np.arange(start=0, stop=np.shape(new_state)[0], step=1)
             if np.size(equal_indicies):
                 last_found = i
