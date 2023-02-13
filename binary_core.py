@@ -1,5 +1,7 @@
 import numpy as np
 
+_BYTE_CONV = np.array([1 << x for x in range(8)], dtype=np.uint8)
+
 
 def random_unit8(shape, n_bits=8):
     return np.random.randint(0, 1 << n_bits, shape).astype(np.uint8)
@@ -9,8 +11,8 @@ def random_binary_data(shape, p):
     return np.random.binomial(1, p, shape).astype(np.bool_)
 
 
-def binary_to_uint8(data, axis=-1):
-    return np.squeeze(np.packbits(data, axis=axis, bitorder="little"), axis=axis)
+def binary_to_uint8(data):
+    return np.einsum("...k, k -> ...", data, _BYTE_CONV[:data.shape[-1]], dtype=np.uint8)
 
 
 def uint8_to_binary(data, n_bits=8):
