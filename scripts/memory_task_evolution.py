@@ -60,7 +60,7 @@ N = 8
 population_size = 100
 keep_best = int(0.8 * population_size)
 n_children = population_size - keep_best
-n_populations = 20
+n_populations = 10
 n_trajectories = 200
 noise_prob = 0.02
 mutation_rate = 0.001
@@ -69,7 +69,7 @@ init_p = 0.5
 init_avg_k = 2
 max_k = 8
 
-n_generations = 10
+n_generations = 2000
 n_memory_timesteps = 10
 
 input_state = make_memory_input_state(N)
@@ -83,7 +83,7 @@ input_state_traj = cp.broadcast_to(cp.expand_dims(input_state_batched, 0), (n_tr
 best_populations = [None] * n_populations
 best_errors = cp.array([cp.inf] * n_populations)
 for generation in range(n_generations):
-    updated_states = run_dynamics_forward(input_state_traj, functions, connectivity, used_connectivity, n_memory_timesteps, noise_prob)
+    updated_states = run_dynamics_forward(input_state_traj, functions, connectivity, used_connectivity, n_memory_timesteps + np.random.randint(0, 3), noise_prob)
     error_rates = evaluate_memory_task(updated_states)
     sorted_error_rates = cp.argsort(error_rates, axis=-1)
     expand_sort_error_rates = cp.expand_dims(cp.expand_dims(sorted_error_rates, -1), -1)
