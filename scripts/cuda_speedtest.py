@@ -6,12 +6,15 @@ import numpy as np
 import os
 import time
 
-import binary_core, cuda_binary_core
+
+import binary_core
 
 os.environ["CUPY_ACCELERATORS"] = "cutensor"
 
 function_dimension = 8
-batch_sizes = 1 * np.floor(np.logspace(start=3, stop=6, num=15)).astype(np.int64)
+
+batch_sizes = 1 * np.floor(np.logspace(start=3, stop=8, num=15)).astype(np.int64)
+
 all_times_numpy = []
 all_times_cupy = []
 dtype = np.bool_
@@ -29,18 +32,19 @@ for i, batch_size in enumerate(batch_sizes):
         break
     print("starting numpy")
     try:
-        numpy_start_time = time.time()
-        _ = binary_core.apply_binary_function(data, functions)
-        numpy_end_time = time.time()
-        print("numpy time: {}".format(numpy_end_time - numpy_start_time))
-        all_times_numpy.append(numpy_end_time - numpy_start_time)
+        data_cp = cp.array(data)
+        functions_cp = cp.array(functions)
+        times = benchmark(binary_core.apply_binary_function, (data, functions), n_repeat=10)
+        np_time = np.mean(times.cpu_times) + np.mean(times.gpu_times)
+        print("numpy time: {}".format(np_time))
+        all_times_numpy.append(np_time)
     except:
         print("numpy failed")
     print("starting cupy")
     try:
         data_cp = cp.array(data)
         functions_cp = cp.array(functions)
-        times = benchmark(cuda_binary_core.apply_binary_function, (data_cp, functions_cp), n_repeat=10)
+        times = benchmark(binary_core.apply_binary_function, (data_cp, functions_cp), n_repeat=10)
         cp_time = np.mean(times.cpu_times) + np.mean(times.gpu_times)
         print("cupy time: {}".format(cp_time))
         all_times_cupy.append(cp_time)

@@ -1,3 +1,4 @@
+import cupy as cp
 import numpy as np
 
 import binary_core
@@ -6,7 +7,7 @@ import binary_core
 def test_conversion():
     binary_dimension = 3
     data_b = binary_core.random_binary_data((20, 10, binary_dimension), 0.5)
-    data_u = binary_core.binary_to_uint8(data_b, -1)
+    data_u = binary_core.binary_to_uint8(data_b)
     data_b_re = binary_core.uint8_to_binary(data_u, binary_dimension)
     np.testing.assert_equal(data_b_re, data_b)
 
@@ -46,3 +47,20 @@ def test_truth_table_columns():
     test_u = binary_core.binary_to_uint8(test_binary)
     tt_samples = np.take(tt, test_u, axis=0)
     np.testing.assert_equal(test_binary, tt_samples)
+
+
+def test_cuda():
+    batch_size = 100
+    function_size = 4
+    data = np.random.binomial(1, 0.5, size=(batch_size, function_size)).astype(np.bool_)
+    functions = np.random.binomial(1, 0.5, size=(batch_size, 1<<function_size)).astype(np.bool_)
+
+    data_cp = cp.array(data)
+    functions_cp = cp.array(functions)
+
+    result_np = binary_core.apply_binary_function(data, functions)
+    result_cp = binary_core.apply_binary_function(data_cp, functions_cp)
+
+    np.testing.assert_equal(result_np, cp.asnumpy(result_cp))
+
+
