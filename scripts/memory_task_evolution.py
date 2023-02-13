@@ -1,3 +1,4 @@
+import atexit
 import sys
 import os
 sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
@@ -82,6 +83,16 @@ used_connectivity = cp.random.binomial(1, init_avg_k/max_k, (n_populations, popu
 input_state_traj = cp.broadcast_to(cp.expand_dims(input_state_batched, 0), (n_trajectories, *input_state_batched.shape))
 best_populations = [None] * n_populations
 best_errors = cp.array([cp.inf] * n_populations)
+
+def f_exit():
+    out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/memory_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+    os.makedirs(out_dir, exist_ok=False)
+    with open(os.path.join(out_dir, 'best_populations.pk'), 'wb') as f:
+        pickle.dump(best_populations, f)
+    np.save(os.path.join(out_dir, "errors.npy"), cp.asnumpy(best_errors))
+
+atexit.register(f_exit)
+
 for generation in range(n_generations):
     updated_states = run_dynamics_forward(input_state_traj, functions, connectivity, used_connectivity, n_memory_timesteps + np.random.randint(0, 3), noise_prob)
     error_rates = evaluate_memory_task(updated_states)
@@ -116,8 +127,4 @@ for generation in range(n_generations):
             print("population {} mean error rate: {}".format(i, error))
 
 
-out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/memory_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
-os.makedirs(out_dir, exist_ok=False)
-with open(os.path.join(out_dir, 'best_populations.pk'), 'wb') as f:
-    pickle.dump(best_populations, f)
 
