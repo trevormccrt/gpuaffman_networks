@@ -13,6 +13,9 @@ def graph_from_spec(connections):
     return graph
 
 
+
+
+
 def plot_graph_with_state(g, layout, state, ax, **kwargs):
     color_list = ["C0" if x else "C1" for x in state]
     nx.draw(g, ax=ax, pos=layout, node_color=color_list, **kwargs)
