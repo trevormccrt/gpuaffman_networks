@@ -9,10 +9,9 @@ import general_network
 
 os.environ["CUPY_ACCELERATORS"] = "cutensor"
 
-N = 100
+N = 20
 max_k = 8
-init_avg_k = 2
-batch_sizes = 3 * np.floor(np.logspace(start=3, stop=5, num=15)).astype(np.int64)
+batch_sizes = 1 * np.floor(np.logspace(start=3, stop=6, num=15)).astype(np.int64)
 all_times_np = []
 all_times_cp = []
 for batch_size in batch_sizes:
