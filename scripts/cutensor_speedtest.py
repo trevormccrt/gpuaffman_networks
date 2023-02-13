@@ -5,10 +5,10 @@ import numpy as np
 import os
 import time
 
-from boolean_networks import cuda_binary_core
+import cuda_binary_core
 
 function_dimension = 3
-batch_sizes = 3 * np.floor(np.logspace(start=3, stop=9, num=15)).astype(np.int64)
+batch_sizes = 3 * np.floor(np.logspace(start=3, stop=8, num=15)).astype(np.int64)
 all_times_def = []
 all_times_cutensor = []
 dtype = np.bool_

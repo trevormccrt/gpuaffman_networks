@@ -2,8 +2,6 @@ import cupy as cnp
 import numpy as np
 
 
-
-
 import binary_core, general_network, linear_network
 
 

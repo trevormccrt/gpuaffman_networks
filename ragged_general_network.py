@@ -1,6 +1,7 @@
 import cupy as cp
 
-from boolean_networks import cuda_binary_core, general_network
+
+import cuda_binary_core, general_network
 
 
 def apply_ragged_k_binary_function(binary_data, functions, used_connections):
