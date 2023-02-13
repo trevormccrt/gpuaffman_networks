@@ -13,7 +13,13 @@ def graph_from_spec(connections):
     return graph
 
 
-
+def graph_from_ragged_spec(connections, used_connections):
+    g = nx.DiGraph()
+    g.add_nodes_from(np.arange(start=0, stop=np.shape(connections)[0], step=1))
+    for i, (c, u) in enumerate(zip(connections, used_connections)):
+        this_cons = np.squeeze(c[np.argwhere(u == 1)], -1)
+        g.add_edges_from([(i, x) for x in this_cons])
+    return g
 
 
 def plot_graph_with_state(g, layout, state, ax, **kwargs):
