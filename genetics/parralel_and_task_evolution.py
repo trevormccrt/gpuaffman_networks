@@ -38,11 +38,11 @@ def evaluate_pnand_task(data):
 if __name__ == "__main__":
     os.environ["CUPY_ACCELERATORS"] = "cutensor"
     cupy.cuda.device.Device(0).use()
-    N = 12
-    population_size = 70
+    N = 15
+    population_size = 100
     keep_best = int(0.8 * population_size)
     n_children = population_size - keep_best
-    n_populations = 10
+    n_populations = 20
     n_trajectories = 10
     noise_prob = 0.01
     mutation_rate = 0.001
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     init_avg_k = 2
     max_k = 8
 
-    n_generations = 200
+    n_generations = 300000
     n_memory_timesteps = 15
 
     input_state = cp.array(make_pnand_input_state(N))
@@ -78,9 +78,9 @@ if __name__ == "__main__":
             pickle.dump(best_organisms, f)
         with open(os.path.join(out_dir, 'checkpoint_organisms.pk'), 'wb') as f:
             pickle.dump(checkpoint_organisms, f)
-        np.save(os.path.join(out_dir, "best_errors.npy"), cp.asnumpy(best_errors))
-        np.save(os.path.join(out_dir, "checkpoint_errors.npy"), cp.asnumpy(checkpoint_errors))
-        np.save(os.path.join(out_dir, "checkpoint_generations.npy"), cp.asnumpy(checkpoint_generations))
+        np.save(os.path.join(out_dir, "best_errors.npy"), best_errors)
+        np.save(os.path.join(out_dir, "checkpoint_errors.npy"), checkpoint_errors)
+        np.save(os.path.join(out_dir, "checkpoint_generations.npy"), checkpoint_generations)
 
     atexit.register(f_exit)
 
@@ -92,9 +92,9 @@ if __name__ == "__main__":
         if generation % 100 == 0:
             print("GENERATION {}".format(generation))
             checkpoint_generations.append(generation)
-            checkpoint_organisms.append((functions[:, 0, ...], connectivity[:, 0, ...], used_connectivity[:, 0, ...]))
+            checkpoint_organisms.append((cp.asnumpy(functions[:, 0, ...]), cp.asnumpy(connectivity[:, 0, ...]), cp.asnumpy(used_connectivity[:, 0, ...])))
         for i, error in enumerate(population_errors):
             if error < best_errors[i]:
-                best_errors[i] = error
+                best_errors[i] = cp.asnumpy(error)
                 best_organisms[i] = (cp.asnumpy(functions[i, 0, ...]), cp.asnumpy(connectivity[i, 0, ...]), cp.asnumpy(used_connectivity[i, 0, ...]))
                 print("population {} mean error rate: {}".format(i, error))
