@@ -1,7 +1,10 @@
 import celluloid
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
+
+from genetics import analysis_util
 
 def graph_from_spec(connections):
     edges = []
@@ -20,6 +23,27 @@ def graph_from_ragged_spec(connections, used_connections):
         this_cons = np.squeeze(c[np.argwhere(u == 1)], -1)
         g.add_edges_from([(i, x) for x in this_cons])
     return g
+
+
+def influence_graph_from_ragged_spec(functions, connections, used_connections):
+    inf = analysis_util.compute_influence(functions)
+    g = nx.DiGraph()
+    g.add_nodes_from(np.arange(start=0, stop=np.shape(connections)[0], step=1))
+    for i, (c, u, infs) in enumerate(zip(connections, used_connections, inf)):
+        this_cons = np.squeeze(c[np.argwhere(u == 1)], -1)
+        this_infs = np.squeeze(infs[np.argwhere(u == 1)], -1)
+        g.add_weighted_edges_from([(i, x, w) for x, w in zip(this_cons, this_infs)])
+    return g
+
+
+def plot_network_directed(graph, pos, ax, node_colors):
+    labels = {}
+    edges, weights = zip(*nx.get_edge_attributes(graph, 'weight').items())
+    for node in graph.nodes():
+        labels[node]=node
+    nx.draw_networkx_nodes(graph, pos=pos, ax=ax, node_color=node_colors)
+    nx.draw_networkx_edges(graph, pos=pos, arrowstyle="->", ax=ax, arrows=True, edge_color=weights, edge_cmap=plt.cm.Greys)
+    nx.draw_networkx_labels(graph, pos, labels, ax=ax)
 
 
 def plot_graph_with_state(g, layout, state, ax, **kwargs):
