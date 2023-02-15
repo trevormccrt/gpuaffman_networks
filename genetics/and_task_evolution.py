@@ -48,7 +48,7 @@ if __name__ == "__main__":
     init_avg_k = 2
     max_k = 2
 
-    n_generations = 100
+    n_generations = 200000
     n_memory_timesteps = 15
 
     input_state = make_and_input_state(N)
@@ -90,7 +90,7 @@ if __name__ == "__main__":
             n_memory_timesteps + np.random.randint(0, 5), noise_prob, evaluate_and_task,
             ragged_task_evolution.split_breed_data, n_children, binary_mutation_fn, integer_mutation_fn)
         if generation % 100 == 0:
-            print("GENERATION {} ERRORS {}".format(generation, best_errors))
+            print("GENERATION {} ERRORS {}".format(generation, sorted(best_errors)))
             checkpoint_errors.append(cp.asnumpy(best_errors))
             checkpoint_generations.append(generation)
             checkpoint_organisms.append((cp.asnumpy(functions[:, 0, ...]), cp.asnumpy(connectivity[:, 0, ...]), cp.asnumpy(used_connectivity[:, 0, ...])))

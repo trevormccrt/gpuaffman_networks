@@ -8,6 +8,7 @@ import datetime
 import numpy as np
 import pickle
 import cupy.cuda.device
+import json
 
 import binary_core
 from genetics import ragged_task_evolution
@@ -38,7 +39,7 @@ def evaluate_pnand_task(data):
 if __name__ == "__main__":
     os.environ["CUPY_ACCELERATORS"] = "cutensor"
     cupy.cuda.device.Device(0).use()
-    N = 15
+    N = 16
     population_size = 100
     keep_best = int(0.8 * population_size)
     n_children = population_size - keep_best
@@ -49,10 +50,10 @@ if __name__ == "__main__":
 
     init_p = 0.5
     init_avg_k = 2
-    max_k = 8
+    max_k = 3
 
-    n_generations = 300000
-    n_memory_timesteps = 15
+    n_generations = 500000
+    n_memory_timesteps = 10
 
     input_state = cp.array(make_pnand_input_state(N))
     input_state_batched = cp.broadcast_to(cp.expand_dims(cp.expand_dims(input_state, -2), -2), (input_state.shape[0], n_populations, population_size, input_state.shape[1]))
@@ -81,6 +82,9 @@ if __name__ == "__main__":
         np.save(os.path.join(out_dir, "best_errors.npy"), best_errors)
         np.save(os.path.join(out_dir, "checkpoint_errors.npy"), checkpoint_errors)
         np.save(os.path.join(out_dir, "checkpoint_generations.npy"), checkpoint_generations)
+        meta = {"N": N, "k_max": max_k, "noise_prob": noise_prob, "mutation_rate": mutation_rate}
+        with open(os.path.join(out_dir, 'meta.json'), 'w+') as f:
+            json.dump(meta, f)
 
     atexit.register(f_exit)
 
@@ -90,9 +94,11 @@ if __name__ == "__main__":
             n_memory_timesteps + np.random.randint(0, 5), noise_prob, evaluate_pnand_task,
             ragged_task_evolution.split_breed_data, n_children, binary_mutation_fn, integer_mutation_fn)
         if generation % 100 == 0:
-            print("GENERATION {}".format(generation))
+            print("GENERATION {} ERRORS {}".format(generation, sorted(best_errors)))
+            checkpoint_errors.append(cp.asnumpy(best_errors))
             checkpoint_generations.append(generation)
-            checkpoint_organisms.append((cp.asnumpy(functions[:, 0, ...]), cp.asnumpy(connectivity[:, 0, ...]), cp.asnumpy(used_connectivity[:, 0, ...])))
+            checkpoint_organisms.append((cp.asnumpy(functions[:, 0, ...]), cp.asnumpy(connectivity[:, 0, ...]),
+                                         cp.asnumpy(used_connectivity[:, 0, ...])))
         for i, error in enumerate(population_errors):
             if error < best_errors[i]:
                 best_errors[i] = cp.asnumpy(error)
