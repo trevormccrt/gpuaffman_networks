@@ -12,6 +12,7 @@ import json
 
 import binary_core
 from genetics import ragged_task_evolution
+cupy.cuda.device.Device(0).use()
 
 
 _4_BIT_TT = binary_core.truth_table_columns(4)
@@ -38,7 +39,6 @@ def evaluate_pnand_task(data):
 
 if __name__ == "__main__":
     os.environ["CUPY_ACCELERATORS"] = "cutensor"
-    cupy.cuda.device.Device(0).use()
     N = 16
     population_size = 100
     keep_best = int(0.8 * population_size)
