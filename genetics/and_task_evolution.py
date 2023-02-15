@@ -86,11 +86,10 @@ if __name__ == "__main__":
             n_memory_timesteps + np.random.randint(0, 5), noise_prob, evaluate_and_task,
             ragged_task_evolution.split_breed_data, n_children, binary_mutation_fn, integer_mutation_fn)
         if generation % 5000 == 0:
-            print("GENERATION {}".format(generation))
+            print("GENERATION {} ERRORS {}".format(generation, best_errors))
             checkpoint_generations.append(generation)
             checkpoint_organisms.append((cp.asnumpy(functions[:, 0, ...]), cp.asnumpy(connectivity[:, 0, ...]), cp.asnumpy(used_connectivity[:, 0, ...])))
         for i, error in enumerate(population_errors):
             if error < best_errors[i]:
                 best_errors[i] = error
                 best_organisms[i] = (cp.asnumpy(functions[i, 0, ...]), cp.asnumpy(connectivity[i, 0, ...]), cp.asnumpy(used_connectivity[i, 0, ...]))
-                print("population {} mean error rate: {}".format(i, error))
