@@ -88,7 +88,7 @@ if __name__ == "__main__":
         if generation % 5000 == 0:
             print("GENERATION {}".format(generation))
             checkpoint_generations.append(generation)
-            checkpoint_organisms.append((functions[:, 0, ...], connectivity[:, 0, ...], used_connectivity[:, 0, ...]))
+            checkpoint_organisms.append((cp.asnumpy(functions[:, 0, ...]), cp.asnumpy(connectivity[:, 0, ...]), cp.asnumpy(used_connectivity[:, 0, ...])))
         for i, error in enumerate(population_errors):
             if error < best_errors[i]:
                 best_errors[i] = error
