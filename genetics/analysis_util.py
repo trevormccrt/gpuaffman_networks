@@ -16,10 +16,10 @@ def run_dynamics_forward_save_state(input_state, functions, connections, used_co
     if isinstance(input_state, cp.ndarray):
         xp = cp
     states = np.tile(np.expand_dims(input_state, 0), (n_timesteps + 2, *([1] * len(input_state.shape))))
+    states[1] = ragged_general_network.ragged_k_state_update(states[0], functions, connections, used_connections)
     noise = xp.random.binomial(1, p_noise, (n_timesteps, *input_state.shape)).astype(np.bool_)
     for i in range(n_timesteps):
-        states[i+1] = np.bitwise_xor(ragged_general_network.ragged_k_state_update(states[i], functions, connections, used_connections), noise[i])
-    states[-1] = ragged_general_network.ragged_k_state_update(states[-2], functions, connections, used_connections)
+        states[i+2] = ragged_general_network.ragged_k_state_update(np.bitwise_xor(states[i+1], noise[i]), functions, connections, used_connections)
     return states, noise
 
 
@@ -40,5 +40,16 @@ def compute_influence(function):
         inf = np.mean(function[..., indicies] != function[..., shifted_ind], axis=-1)
         influences[..., to_flip] = inf
     return influences
+
+
+def death_prob_vs_time(input_state, functions, connections, used_connections, n_trajectories, p_noise, f_eval, t_start, t_end):
+    xp = np
+    if isinstance(input_state, cp.ndarray):
+        xp = cp
+    states, _ = run_dynamics_forward_save_state(np.broadcast_to(np.expand_dims(input_state, 0), (n_trajectories, *input_state.shape)), functions, connections, used_connections, t_end, p_noise)
+    errors = []
+    for state in states[t_start:]:
+        errors.append(f_eval(state))
+    return xp.array(errors)
 
 

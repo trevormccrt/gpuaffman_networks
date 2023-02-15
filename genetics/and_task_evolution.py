@@ -14,7 +14,7 @@ import cupy.cuda.device
 from genetics import ragged_task_evolution
 
 
-def make_memory_input_state(N):
+def make_and_input_state(N):
     input_state = cp.zeros((4, N), dtype=cp.uint8)
     input_state[0, (0, 1)] = (False, False)
     input_state[1, (0, 1)] = (False, True)
@@ -23,7 +23,7 @@ def make_memory_input_state(N):
     return input_state
 
 
-def evaluate_memory_task(data):
+def evaluate_and_task(data):
     error_rate_0 = np.mean(np.equal(data[:, 0, :, :, 2], False), axis=0)
     error_rate_1 = np.mean(np.equal(data[:, 1, :, :, 2], False), axis=0)
     error_rate_2 = np.mean(np.equal(data[:, 2, :, :, 2], False), axis=0)
@@ -34,23 +34,23 @@ def evaluate_memory_task(data):
 if __name__ == "__main__":
     os.environ["CUPY_ACCELERATORS"] = "cutensor"
     cupy.cuda.device.Device(0).use()
-    N = 12
+    N = 8
     population_size = 70
     keep_best = int(0.8 * population_size)
     n_children = population_size - keep_best
-    n_populations = 10
+    n_populations = 40
     n_trajectories = 200
     noise_prob = 0.01
     mutation_rate = 0.001
 
     init_p = 0.5
     init_avg_k = 2
-    max_k = 8
+    max_k = 2
 
-    n_generations = 200
+    n_generations = 200000
     n_memory_timesteps = 15
 
-    input_state = make_memory_input_state(N)
+    input_state = make_and_input_state(N)
     input_state_batched = cp.broadcast_to(cp.expand_dims(cp.expand_dims(input_state, -2), -2), (input_state.shape[0], n_populations, population_size, input_state.shape[1]))
 
     functions = cp.random.randint(0, 2, (n_populations, population_size, N, 1 << max_k), dtype=cp.uint8).astype(cp.bool_)
@@ -83,9 +83,9 @@ if __name__ == "__main__":
     for generation in range(n_generations):
         functions, connectivity, used_connectivity, population_errors = ragged_task_evolution.evolutionary_step(
             input_state_batched, n_trajectories, functions, connectivity, used_connectivity,
-            n_memory_timesteps + np.random.randint(0, 5), noise_prob, evaluate_memory_task,
+            n_memory_timesteps + np.random.randint(0, 5), noise_prob, evaluate_and_task,
             ragged_task_evolution.split_breed_data, n_children, binary_mutation_fn, integer_mutation_fn)
-        if generation % 100 == 0:
+        if generation % 5000 == 0:
             print("GENERATION {}".format(generation))
             checkpoint_generations.append(generation)
             checkpoint_organisms.append((functions[:, 0, ...], connectivity[:, 0, ...], used_connectivity[:, 0, ...]))
