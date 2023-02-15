@@ -103,4 +103,3 @@ if __name__ == "__main__":
             if error < best_errors[i]:
                 best_errors[i] = cp.asnumpy(error)
                 best_organisms[i] = (cp.asnumpy(functions[i, 0, ...]), cp.asnumpy(connectivity[i, 0, ...]), cp.asnumpy(used_connectivity[i, 0, ...]))
-                print("population {} mean error rate: {}".format(i, error))
