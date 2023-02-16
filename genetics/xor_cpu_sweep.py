@@ -3,6 +3,7 @@ import multiprocessing as mp
 import numpy as np
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
 import ragged_task_evolution
@@ -10,7 +11,7 @@ from genetics import xor_task_evolution
 
 
 def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generations, n_trajectories, timesteps, population_size, death_ratio, out_dir, process_id):
-    np.random.seed()
+    np.random.seed((os.getpid() * int(time.time())) % 123456789)
     n_populations = 1
     population_size = 70
     keep_best = int(0.8 * population_size)
@@ -62,10 +63,10 @@ def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generati
 out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/cpu_xor_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
 
-n_trials = 2
+n_trials = 80
 
 
-n_vals = np.random.randint(4, 20, n_trials)
+n_vals = np.random.randint(3, 20, n_trials)
 max_k_vals = np.random.randint(2, 5, n_trials)
 
 inputs = []

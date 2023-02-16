@@ -3,6 +3,7 @@ import multiprocessing as mp
 import numpy as np
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
 import ragged_task_evolution
@@ -10,9 +11,9 @@ from and_task_evolution import make_and_input_state, evaluate_and_task
 
 
 def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generations, n_trajectories, timesteps, population_size, death_ratio, out_dir, process_id):
-    np.random.seed(process_id)
+    np.random.seed((os.getpid() * int(time.time())) % 123456789)
     n_populations = 1
-    population_size = 70
+    population_size = population_size
     keep_best = int(0.8 * population_size)
     n_children = population_size - keep_best
 
@@ -62,15 +63,15 @@ def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generati
 out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/cpu_and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
 
-n_trials = 2
+n_trials = 80
 
 
-n_vals = np.random.randint(4, 20, n_trials)
+n_vals = np.random.randint(3, 20, n_trials)
 max_k_vals = np.random.randint(2, 5, n_trials)
 
 inputs = []
 for i, (n, k) in enumerate(zip(n_vals, max_k_vals)):
-    inputs.append((n, k, 2, 0.5, 0.01, 0.001, 400, 100, 7, 70, 0.6, out_dir, i))
+    inputs.append((n, k, 2, 0.5, 0.01, 0.001, 200000, 100, 7, 70, 0.6, out_dir, i))
 
 p = mp.Pool()
 p.starmap(run_task, inputs)
