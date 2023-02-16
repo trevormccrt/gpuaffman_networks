@@ -2,6 +2,8 @@ import datetime
 import multiprocessing as mp
 import numpy as np
 import os
+import sys
+sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
 import ragged_task_evolution
 from and_task_evolution import make_and_input_state, evaluate_and_task
