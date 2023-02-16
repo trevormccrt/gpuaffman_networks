@@ -6,17 +6,17 @@ import sys
 sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
 import ragged_task_evolution
-from and_task_evolution import make_and_input_state, evaluate_and_task
+from genetics import xor_task_evolution
 
 
 def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generations, n_trajectories, timesteps, population_size, death_ratio, out_dir, process_id):
-    np.random.seed(process_id)
+    np.random.seed()
     n_populations = 1
     population_size = 70
     keep_best = int(0.8 * population_size)
     n_children = population_size - keep_best
 
-    input_state = make_and_input_state(N)
+    input_state = xor_task_evolution.make_xor_input_state(N)
     input_state_batched = np.broadcast_to(np.expand_dims(np.expand_dims(input_state, -2), -2),
                                           (input_state.shape[0], n_populations, population_size, input_state.shape[1]))
 
@@ -43,7 +43,7 @@ def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generati
     for generation in range(n_generations):
         functions, connectivity, used_connectivity, population_errors = ragged_task_evolution.evolutionary_step(
             input_state_batched, n_trajectories, functions, connectivity, used_connectivity,
-            timesteps + np.random.randint(0, 5), noise_prob, evaluate_and_task,
+            timesteps + np.random.randint(0, 5), noise_prob, xor_task_evolution.evaluate_xor_task,
             ragged_task_evolution.split_breed_data, n_children, binary_mutation_fn, integer_mutation_fn)
         if generation % 100 == 0:
             print("GENERATION {} ERRORS {}".format(generation, sorted(best_errors)))
@@ -59,7 +59,7 @@ def run_task(N, max_k, init_avg_k, init_P, noise_prob, mutation_rate, n_generati
 
 
 
-out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/cpu_and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/cpu_xor_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
 
 n_trials = 2
@@ -70,7 +70,7 @@ max_k_vals = np.random.randint(2, 5, n_trials)
 
 inputs = []
 for i, (n, k) in enumerate(zip(n_vals, max_k_vals)):
-    inputs.append((n, k, 2, 0.5, 0.01, 0.001, 400, 100, 7, 70, 0.6, out_dir, i))
+    inputs.append((n, k, 2, 0.5, 0.01, 0.001, 200000, 100, 7, 70, 0.6, out_dir, i))
 
 p = mp.Pool()
 p.starmap(run_task, inputs)
