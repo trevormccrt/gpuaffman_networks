@@ -24,10 +24,13 @@ def run_dynamics_forward_save_state(input_state, functions, connections, used_co
 
 
 def generate_ft_curve(physical_error_rates, input_state, functions, connectivity, used_connectivity, f_eval, n_traj=5000, n_timesteps=10):
+    xp = np
+    if isinstance(input_state, cp.ndarray):
+        xp = cp
     logical_error_rates = []
     for error_rate in physical_error_rates:
         logical_error_rates.append(np.squeeze(ragged_task_evolution.evaluate_populations(input_state, n_traj, functions, connectivity, used_connectivity, n_timesteps, error_rate, f_eval), -1))
-    return np.array(logical_error_rates)
+    return xp.array(logical_error_rates)
 
 
 def compute_influence(function):

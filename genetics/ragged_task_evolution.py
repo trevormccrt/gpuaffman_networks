@@ -39,7 +39,7 @@ def pair_breed_random(first_parents, second_parents, p_first=0.5):
 
 def split_breeding(first_parents, second_parents, n_children):
     mix_children = int(n_children/2)
-    return cp.concatenate([pair_breed_swap(first_parents[:, :mix_children, :, :], second_parents[:, :mix_children, :, :]),
+    return np.concatenate([pair_breed_swap(first_parents[:, :mix_children, :, :], second_parents[:, :mix_children, :, :]),
                            pair_breed_random(first_parents[:, mix_children:, :, :], second_parents[:, mix_children:, :, :])], 1)
 
 
@@ -48,12 +48,19 @@ def split_breed_data(data, selected_parents, n_children):
     children = split_breeding(*data_parents, n_children)
     return children
 
+
 def mutate_binary(data, mutation_rate):
-    return cp.bitwise_xor(data, cp.random.binomial(1, mutation_rate, data.shape))
+    xp = np
+    if isinstance(data, cp.ndarray):
+        xp = cp
+    return np.bitwise_xor(data, xp.random.binomial(1, mutation_rate, data.shape).astype(data.dtype))
 
 
 def mutate_integer(data, mutation_rate, rollover):
-    return cp.mod(data + cp.random.binomial(1, mutation_rate, data.shape), rollover)
+    xp = np
+    if isinstance(data, cp.ndarray):
+        xp = cp
+    return np.mod(data + xp.random.binomial(1, mutation_rate, data.shape).astype(data.dtype), rollover)
 
 
 def run_dynamics_forward(input_state, functions, connections, used_connections, n_timesteps, p_noise):

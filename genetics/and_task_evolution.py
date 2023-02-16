@@ -16,7 +16,7 @@ from genetics import ragged_task_evolution
 
 
 def make_and_input_state(N):
-    input_state = cp.zeros((4, N), dtype=cp.uint8)
+    input_state = np.zeros((4, N), dtype=cp.uint8)
     input_state[0, (0, 1)] = (False, False)
     input_state[1, (0, 1)] = (False, True)
     input_state[2, (0, 1)] = (True, False)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     n_generations = 200000
     n_memory_timesteps = 15
 
-    input_state = make_and_input_state(N)
+    input_state = cp.array(make_and_input_state(N))
     input_state_batched = cp.broadcast_to(cp.expand_dims(cp.expand_dims(input_state, -2), -2), (input_state.shape[0], n_populations, population_size, input_state.shape[1]))
 
     functions = cp.random.randint(0, 2, (n_populations, population_size, N, 1 << max_k), dtype=cp.uint8).astype(cp.bool_)
