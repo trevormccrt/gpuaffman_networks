@@ -4,19 +4,18 @@ import sys
 import os
 sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
-import cupy as cp
+
 import datetime
 import numpy as np
 
 import pickle
 
-import cupy.cuda.device
 
 from genetics import ragged_task_evolution
 
 
 def make_and_input_state(N):
-    input_state = np.zeros((4, N), dtype=cp.uint8)
+    input_state = np.zeros((4, N), dtype=np.uint8)
     input_state[0, (0, 1)] = (False, False)
     input_state[1, (0, 1)] = (False, True)
     input_state[2, (0, 1)] = (True, False)
@@ -33,6 +32,8 @@ def evaluate_and_task(data):
 
 
 if __name__ == "__main__":
+    import cupy as cp
+    import cupy.cuda.device
     os.environ["CUPY_ACCELERATORS"] = "cutensor"
     cupy.cuda.device.Device(0).use()
     N = 8
