@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
 
     def f_exit():
-        out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+        out_dir = os.path.join(os.getenv("HOME"),"boolean_network_data/xor_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
         os.makedirs(out_dir, exist_ok=False)
         with open(os.path.join(out_dir, 'best_populations.pk'), 'wb') as f:
             pickle.dump(best_organisms, f)

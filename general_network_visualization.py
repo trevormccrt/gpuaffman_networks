@@ -42,7 +42,7 @@ def plot_network_directed(graph, pos, ax, node_colors):
     for node in graph.nodes():
         labels[node]=node
     nx.draw_networkx_nodes(graph, pos=pos, ax=ax, node_color=node_colors)
-    nx.draw_networkx_edges(graph, pos=pos, arrowstyle="->", ax=ax, arrows=True, edge_color=weights, edge_cmap=plt.cm.Greys, edge_vmin=0, edge_vmax=1)
+    nx.draw_networkx_edges(graph, pos=pos, arrowstyle="->", ax=ax, arrows=True)#edge_color=weights, edge_cmap=plt.cm.Greys, edge_vmin=0, edge_vmax=1)
     nx.draw_networkx_labels(graph, pos, labels, ax=ax)
 
 
