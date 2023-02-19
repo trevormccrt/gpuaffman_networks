@@ -19,7 +19,7 @@ init_avg_k = 3
 max_k = 4
 
 n_generations = 600000
-n_memory_timesteps = 10
+n_memory_timesteps = 12
 
 
 out_dir = os.path.join(os.getenv("DATA_DIR"), "boolean_network_data/sequential_and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
@@ -31,5 +31,5 @@ file_name = "batch_1.npz"
 
 evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
                                mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
-                               tasks.make_3_bit_input_state, tasks.evaluate_sequential_and_task, out_dir, file_name,
-                               True, checkpointing_dir=checkpointint_dir, checkpointing_freq=1000)
+                               tasks.make_6_bit_input_state, tasks.evaluate_modular_6_task, out_dir, file_name,
+                               True, checkpointing_dir=checkpointint_dir, checkpointing_freq=100)

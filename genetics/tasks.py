@@ -20,8 +20,6 @@ _MODULAR_6_DESIRED_OUT = np.bitwise_or(np.bitwise_and(np.bitwise_or(_6_BIT_TT[:,
                                                       np.bitwise_or(_6_BIT_TT[:, 2], _6_BIT_TT[:, 3])),
                                        np.bitwise_and(_6_BIT_TT[:, 4], _6_BIT_TT[:, 5]))
 
-print("")
-
 
 try:
     import cupy as cp
@@ -72,7 +70,7 @@ def make_4_bit_input_state(N):
 
 
 def make_6_bit_input_state(N):
-    input_state = np.zeros((16, N), dtype=np.uint8)
+    input_state = np.zeros((64, N), dtype=np.uint8)
     input_state[:, :6] = _6_BIT_TT
     return input_state
 
@@ -109,7 +107,7 @@ def evaluate_modular_6_task(data):
     desired_out = _MODULAR_6_DESIRED_OUT
     if not isinstance(data, np.ndarray):
         desired_out = _MODULAR_6_DESIRED_OUT_GPU
-    error_rate = np.mean(np.equal(data[:, :, :, :, 6], desired_out.T), axis=(0, -2, -1))
+    error_rate = np.mean(np.equal(data[:, :, :, :, 6], desired_out.T), axis=(0, -2))
     return error_rate
 
 
