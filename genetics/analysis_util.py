@@ -1,7 +1,8 @@
 import cupy as cp
 import numpy as np
 
-import ragged_task_evolution, ragged_general_network
+import ragged_general_network
+from genetics import ragged_task_evolution
 
 
 def sort_by_performance(input_state, functions, connectivity, used_connectivity, f_eval, n_trajectories=10000, n_timesteps=10, p_error=0.01, ):
@@ -15,7 +16,7 @@ def run_dynamics_forward_save_state(input_state, functions, connections, used_co
     xp = np
     if isinstance(input_state, cp.ndarray):
         xp = cp
-    states = np.tile(np.expand_dims(input_state, 0), (n_timesteps + 2, *([1] * len(input_state.shape))))
+    states = xp.tile(np.expand_dims(input_state, 0), (n_timesteps + 2, *([1] * len(input_state.shape))))
     states[1] = ragged_general_network.ragged_k_state_update(states[0], functions, connections, used_connections)
     noise = xp.random.binomial(1, p_noise, (n_timesteps, *input_state.shape)).astype(np.bool_)
     for i in range(n_timesteps):
