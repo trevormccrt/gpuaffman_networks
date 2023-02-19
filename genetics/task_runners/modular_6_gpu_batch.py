@@ -22,7 +22,7 @@ n_generations = 600000
 n_memory_timesteps = 12
 
 
-out_dir = os.path.join(os.getenv("DATA_DIR"), "boolean_network_data/sequential_and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+out_dir = os.path.join(os.getenv("DATA_DIR"), "boolean_network_data/modular_6_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
 checkpointint_dir = os.path.join(out_dir, "checkpoint_data/")
 os.makedirs(checkpointint_dir, exist_ok=False)
