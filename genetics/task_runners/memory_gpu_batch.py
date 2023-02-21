@@ -28,7 +28,7 @@ os.makedirs(out_dir, exist_ok=False)
 
 
 file_name = "batch_1.npz"
-with dev0:
-    evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
-                                   mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
-                                   tasks.make_memory_input_state, tasks.evaluate_memory_task, out_dir, file_name, True)
+
+evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
+                               mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
+                               tasks.make_memory_input_state, tasks.evaluate_memory_task, out_dir, file_name, True)
