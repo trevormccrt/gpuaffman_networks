@@ -32,6 +32,19 @@ except:
     pass
 
 
+def make_memory_input_state(N):
+    input_state = cp.zeros((2, N), dtype=cp.uint8)
+    input_state[1, 0] = True
+    return input_state
+
+
+def evaluate_memory_task(data):
+    error_rate_false = np.mean(np.equal(data[:, 0, :, :, 0], False), axis=0)
+    error_rate_true = np.mean(np.equal(data[:, 1, :, :, 0], True), axis=0)
+    return np.mean(np.stack([error_rate_false, error_rate_true], axis=-1), axis=-1)
+
+
+
 def make_2_bit_input_state(N):
     input_state = np.zeros((4, N), dtype=np.uint8)
     input_state[0, (0, 1)] = (False, False)

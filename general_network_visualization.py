@@ -32,18 +32,27 @@ def influence_graph_from_ragged_spec(functions, connections, used_connections):
     for i, (c, u, infs) in enumerate(zip(connections, used_connections, inf)):
         this_cons = np.squeeze(c[np.argwhere(u == 1)], -1)
         this_infs = np.squeeze(infs[np.argwhere(u == 1)], -1)
-        g.add_weighted_edges_from([(i, x, w) for x, w in zip(this_cons, this_infs)])
+        edges = []
+        for x, w in zip(this_cons, this_infs):
+            if w>0:
+                edges.append((i, x, w))
+        g.add_weighted_edges_from(edges)
     return g
 
 
-def plot_network_directed(graph, pos, ax, node_colors):
+def plot_network_directed(graph, pos, ax, node_colors, colorbar=False):
     labels = {}
     edges, weights = zip(*nx.get_edge_attributes(graph, 'weight').items())
     for node in graph.nodes():
         labels[node]=node
     nx.draw_networkx_nodes(graph, pos=pos, ax=ax, node_color=node_colors)
-    nx.draw_networkx_edges(graph, pos=pos, arrowstyle="->", ax=ax, arrows=True)#edge_color=weights, edge_cmap=plt.cm.Greys, edge_vmin=0, edge_vmax=1)
+    g = nx.draw_networkx_edges(graph, pos=pos, arrowstyle="->", ax=ax, arrows=True, edge_color=weights, edge_cmap=plt.cm.Greys, edge_vmin=0, edge_vmax=1)
+
     nx.draw_networkx_labels(graph, pos, labels, ax=ax)
+    if colorbar:
+        sm = plt.cm.ScalarMappable(cmap=plt.cm.Greys, norm=plt.Normalize(vmin=0, vmax=1))
+        sm._A = []
+        plt.colorbar(sm)
 
 
 def plot_graph_with_state(g, layout, state, ax, **kwargs):
