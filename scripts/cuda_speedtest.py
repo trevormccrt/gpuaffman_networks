@@ -32,8 +32,6 @@ for i, batch_size in enumerate(batch_sizes):
         break
     print("starting numpy")
     try:
-        data_cp = cp.array(data)
-        functions_cp = cp.array(functions)
         times = benchmark(binary_core.apply_binary_function, (data, functions), n_repeat=10)
         np_time = np.mean(times.cpu_times) + np.mean(times.gpu_times)
         print("numpy time: {}".format(np_time))
@@ -55,13 +53,14 @@ for i, batch_size in enumerate(batch_sizes):
     print("\n")
 
 fig, axs = plt.subplots()
-axs.plot(batch_sizes[:len(all_times_numpy)], all_times_numpy, label="numpy")
-axs.plot(batch_sizes[:len(all_times_cupy)], all_times_cupy, label="cuda")
+axs.plot(batch_sizes[:len(all_times_numpy)], batch_sizes[:len(all_times_numpy)]/all_times_numpy, label="Ryzen 9 5950X (Single Core)")
+axs.plot(batch_sizes[:len(all_times_cupy)], batch_sizes[:len(all_times_cupy)]/all_times_cupy, label="RTX 3090")
 axs.legend()
 axs.set_xscale("log")
 axs.set_yscale("log")
 axs.set_xlabel("Batch Size")
-axs.set_ylabel("Time")
+axs.set_ylabel("Update Rate [Hz]")
+axs.set_title("k={}".format(function_dimension))
 plt.show()
 
 out_dir = os.path.join(os.getenv("HOME"), "benchmarking/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
