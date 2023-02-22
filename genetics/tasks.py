@@ -20,7 +20,7 @@ _MODULAR_6_DESIRED_OUT = np.bitwise_or(np.bitwise_and(np.bitwise_or(_6_BIT_TT[:,
                                                       np.bitwise_or(_6_BIT_TT[:, 2], _6_BIT_TT[:, 3])),
                                        np.bitwise_and(_6_BIT_TT[:, 4], _6_BIT_TT[:, 5]))
 
-
+print("")
 try:
     import cupy as cp
     _PAND_DESIRED_OUT_GPU = cp.array(_PAND_DESIRED_OUT)
