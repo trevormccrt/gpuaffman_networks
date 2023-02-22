@@ -1,11 +1,11 @@
 import cupy as cp
+from cupyx.profiler import benchmark
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import time
 
-import cuda_binary_core
+import binary_core
 
 function_dimension = 3
 batch_sizes = 3 * np.floor(np.logspace(start=3, stop=8, num=15)).astype(np.int64)
@@ -21,29 +21,26 @@ for i, batch_size in enumerate(batch_sizes):
     data_cp = cp.array(data)
     functions_cp = cp.array(functions)
     if not i:
-        cuda_binary_core.apply_binary_function(data_cp, functions_cp)
+        binary_core.apply_binary_function(data_cp, functions_cp)
     os.environ["CUPY_ACCELERATORS"] = "cub"
     try:
         print("starting default")
-        def_start_time = time.time()
-        cuda_binary_core.apply_binary_function(data_cp, functions_cp)
-        def_end_time = time.time()
-        print("default time: {}".format(def_end_time - def_start_time))
+        times = benchmark(binary_core.apply_binary_function, (data_cp, functions_cp), n_repeat=10)
+        def_time = np.mean(times.cpu_times) + np.mean(times.gpu_times)
+        print("default time: {}".format(def_time))
+        all_times_def.append(def_time)
     except:
         print("Default Failed")
     os.environ["CUPY_ACCELERATORS"] = "cutensor"
     try:
         print("starting cutensor")
-        cut_start_time = time.time()
-        cuda_binary_core.apply_binary_function(data_cp, functions_cp)
-        cut_end_time = time.time()
+        times = benchmark(binary_core.apply_binary_function, (data_cp, functions_cp), n_repeat=10)
+        cut_time = np.mean(times.cpu_times) + np.mean(times.gpu_times)
+        print("cutensor time: {}".format(cut_time))
+        all_times_cutensor.append(cut_time)
     except:
         print("cutensor failed")
         break
-    print("cutensor time: {}".format(cut_end_time - cut_start_time))
-    all_times_def.append(def_end_time - def_start_time)
-    all_times_cutensor.append(cut_end_time - cut_start_time)
-    print("Used memory: {}".format(mempool.used_bytes()/1e9))
     print("\n")
 
 fig, axs = plt.subplots()

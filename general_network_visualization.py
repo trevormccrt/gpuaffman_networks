@@ -6,6 +6,7 @@ import numpy as np
 
 from genetics import analysis_util
 
+
 def graph_from_spec(connections):
     edges = []
     for node in range(np.shape(connections)[0]):
@@ -25,24 +26,6 @@ def graph_from_ragged_spec(connections, used_connections):
     return g
 
 
-def prune_non_participating(g, skip_nodes):
-
-    while True:
-        all_edges = [e for e in g.edges]
-        to_remove = []
-        for node in g.nodes:
-            active = False
-            for edge in all_edges:
-                if node == edge[0] and not node == edge[1]:
-                    active = True
-            if not active and not node in skip_nodes:
-                to_remove.append(node)
-        g.remove_nodes_from(to_remove)
-        if not to_remove:
-            break
-
-
-
 def influence_graph_from_ragged_spec(functions, connections, used_connections):
     inf = analysis_util.compute_influence(functions)
     g = nx.DiGraph()
@@ -57,6 +40,22 @@ def influence_graph_from_ragged_spec(functions, connections, used_connections):
 
         g.add_weighted_edges_from(edges)
     return g
+
+
+def prune_non_participating(g, skip_nodes):
+    while True:
+        all_edges = [e for e in g.edges]
+        to_remove = []
+        for node in g.nodes:
+            active = False
+            for edge in all_edges:
+                if node == edge[0] and not node == edge[1]:
+                    active = True
+            if not active and not node in skip_nodes:
+                to_remove.append(node)
+        g.remove_nodes_from(to_remove)
+        if not to_remove:
+            break
 
 
 def plot_network_directed(graph, pos, ax, node_colors, colorbar=False):
@@ -86,14 +85,3 @@ def graph_animation(g, layout, trajectory, fig, ax, **kwargs):
         camera.snap()
     animation = camera.animate()
     return animation
-
-#
-# g = nx.DiGraph()
-# g.add_edges_from([(0, 1), (0, 2), (1, 2), (0, 3), (3, 1), (3, 0)])
-# nx.draw(g, with_labels=True)
-# plt.show()
-# print("")
-# prune_non_participating(g, [])
-# nx.draw(g, with_labels=True)
-# plt.show()
-# print("")
