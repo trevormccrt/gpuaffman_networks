@@ -4,12 +4,11 @@ import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import time
+
+import binary_core
 
 os.environ["CUPY_ACCELERATORS"] = "cutensor"
 
-
-import cuda_binary_core
 
 function_dimension = 3
 batch_sizes = 3 * np.floor(np.logspace(start=3, stop=8, num=15)).astype(np.int64)
@@ -28,7 +27,7 @@ for i, batch_size in enumerate(batch_sizes):
         data_cp = cp.array(data)
         functions_cp = cp.array(functions)
         try:
-            times = benchmark(cuda_binary_core.apply_binary_function, (data_cp, functions_cp), n_repeat=10)
+            times = benchmark(binary_core.apply_binary_function, (data_cp, functions_cp), n_repeat=10)
             all_cpu_times[i, j] = np.mean(times.cpu_times)
             all_gpu_times[i, j] = np.mean(times.gpu_times)
             print("")

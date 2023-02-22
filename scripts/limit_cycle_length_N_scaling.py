@@ -1,15 +1,12 @@
 import cupy as cp
 import datetime
 import json
-
 import numpy as np
 import os
 import sys
 sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 
-os.environ["CUPY_ACCELERATORS"] = "cutensor"
-
-import general_network, binary_core
+import binary_core, limit_cycles
 
 out_dir = os.path.join(os.getenv("HOME"), "boolean_network_data/limit_cycle_lengths/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
@@ -19,7 +16,7 @@ def run_limit_cycle_experiment(batch_size, N, k, P, max_iters):
     init_states = cp.array(binary_core.random_binary_data((batch_size, N), 0.5))
     functions = cp.array(binary_core.random_binary_data((batch_size, N, 1<<k), P))
     connectivity = cp.array(np.random.randint(0, N, (batch_size, N, k)))
-    results = general_network.measure_limit_cycle_lengths(init_states, functions, connectivity, max_n_iter=max_iters, verbose=True)
+    results = limit_cycles.measure_limit_cycle_lengths(init_states, functions, connectivity, max_n_iter=max_iters, verbose=True)
     print("Done N: {}, k: {}".format(N, k))
     return results
 

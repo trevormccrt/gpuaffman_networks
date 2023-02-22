@@ -2,6 +2,7 @@ import numpy as np
 
 import binary_core, limit_cycles, general_network
 
+
 def test_simple_cycle_lengths():
     xor_function = np.array([False, True, True, False])
     and_function = np.array([False, False, False, True])

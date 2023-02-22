@@ -1,6 +1,6 @@
 import numpy as np
 
-import analysis_util
+from genetics import analysis_util
 
 
 def test_influence():
