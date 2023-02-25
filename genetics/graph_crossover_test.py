@@ -1,3 +1,4 @@
+import networkx as nx
 import numpy as np
 
 from genetics import graph_crossover
@@ -83,40 +84,31 @@ def test_labeled_connection_spec_to_dict():
 
 def test_find_connected_subgraph_full():
     connections = np.array([[1, 2], [2, 0], [1, 0]])
-    used_connnections = np.array([[True, True], [False, False], [False, False]])
-    in_cons, out_cons = graph_crossover.connection_array_to_dict(connections, used_connnections)
-    subgraph, cut_wires_in, cut_wires_out = graph_crossover.find_connected_subgraph(in_cons, out_cons, 3, [0])
+    used_connections = np.array([[True, True], [False, False], [False, False]])
+    node_labels = np.arange(start=0, stop=3, step=1)
+    graph = graph_crossover.connection_spec_to_graph(connections, used_connections, node_labels)
+    subgraph, cut_edges = graph_crossover.find_connected_subgraph(graph, 3, [0])
     assert sorted(subgraph) == [0, 1, 2]
-    assert not cut_wires_in
-    assert not cut_wires_out
-    subgraph_l, cut_wires_in_l, cut_wires_out_l = graph_crossover.find_connected_subgraph(in_cons, out_cons, 5, [0])
+    assert not cut_edges
+    subgraph_l, cut_edges_l = graph_crossover.find_connected_subgraph(graph, 5, [0])
     assert subgraph_l == subgraph
-    assert cut_wires_in_l == cut_wires_in
-    assert cut_wires_out_l == cut_wires_out
+    assert cut_edges_l == cut_edges
 
 
 def test_find_connected_subgraph():
     # tail, head
-    conn_dict_in = dict([(0, [1]), (1, [2]), (2, [1]), (3, [])])
-    con_dict_out = dict([(0, [2]), (1, [3]), (2, []), (3, [])])
-    subgraph, cut_wires_in, cut_wires_out = graph_crossover.find_connected_subgraph(conn_dict_in, con_dict_out, 3, [0])
-    assert subgraph == [0, 1, 2]
-    assert not cut_wires_in
-    assert cut_wires_out == [(1, 3)]
+    nodes = [0, 1, 2, 3, 4]
+    g = nx.MultiDiGraph()
+    g.add_nodes_from(nodes)
+    g.add_edges_from([(0, 1), (1, 2), (2, 0), (3, 2), (2, 4)])
 
-    subgraph_l, cut_wires_in_l, cut_wires_out_l = graph_crossover.find_connected_subgraph(conn_dict_in, con_dict_out, 5, [0])
-    assert sorted(subgraph_l) == sorted([0, 1, 2, 3])
-    assert not cut_wires_in_l
-    assert not cut_wires_out_l
+    subgraph, cut_edges = graph_crossover.find_connected_subgraph(g, 3, [0])
+    assert sorted(subgraph) == [0, 1, 2]
+    assert set(cut_edges) == {(2, 4), (3, 2)}
 
-
-def test_find_big_connected_subgraph():
-    conn_dict_in = dict([(0, [1, 2, 3]), (1, [2]), (2, [1]), (3, []), (4, [1, 2, 5, 8]), (5, (1, 5, 4)), (6, [8, 4, 1]), (7, [1, 3, 2]), (8, [0])])
-    con_dict_out = dict([(0, [4]), (1, [3]), (2, []), (3, []), (4, [6, 7]), (5, (0, 2, 7)), (6, [0, 1]), (7, [6, 4, 2]), (8, [0, 1])])
-    subgraph, cut_wires_in, cut_wires_out = graph_crossover.find_connected_subgraph(conn_dict_in, con_dict_out, 5, [0])
-    assert sorted(subgraph) == [0, 1, 2, 3, 4]
-    assert set(cut_wires_in) == set([(8, 4), (5, 4)])
-    assert set(cut_wires_out) == set([(4, 6), (4, 7)])
+    subgraph_l, cut_edges = graph_crossover.find_connected_subgraph(g, 5, [0])
+    assert sorted(subgraph_l) == nodes
+    assert not cut_edges
 
 
 def test_find_full_subgraph_connected():
@@ -218,6 +210,3 @@ def test_simple_wiring():
                                                                                                    special_nodes)
     graph_crossover.mend_cut_wires(first_subgraph, first_cut_wires_in, first_cut_wires_out,
                                   second_subgraph, second_cut_wires_in, second_cut_wires_out)
-
-
-test_graph_to_connection_spec()

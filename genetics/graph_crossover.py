@@ -5,31 +5,27 @@ import networkx as nx
 import numpy as np
 
 
-def find_connected_subgraph(in_connections, out_connections, max_subgraph_size, starting_nodes):
+def find_connected_subgraph(graph: nx.MultiDiGraph, max_subgraph_size, starting_nodes):
     # tail, head
     visited = []
-    to_visit = deque([(x, -1, -1) for x in starting_nodes])
+    to_visit = deque([(x, None) for x in starting_nodes])
     while len(visited) < max_subgraph_size:
         if not to_visit:
             break
         this_node = to_visit.pop()[0]
         if not this_node in visited:
             visited.append(this_node)
-            for next_node in in_connections[this_node]:
+            for next_node in graph.predecessors(this_node):
                 if not next_node in visited:
-                    to_visit.appendleft((next_node, this_node, 0))
-            for next_node in out_connections[this_node]:
+                    to_visit.appendleft((next_node, (next_node, this_node)))
+            for next_node in graph.successors(this_node):
                 if not next_node in visited:
-                    to_visit.appendleft((next_node, this_node, 1))
-    cut_wires_out = []
-    cut_wires_in = []
+                    to_visit.appendleft((next_node, (this_node, next_node)))
+    cut_edges = []
     for x in to_visit:
-        if not x[0] in visited and x[1] in visited:
-            if x[-1]:
-                cut_wires_out.append(x[:-1][::-1])
-            else:
-                cut_wires_in.append(x[:-1])
-    return visited, cut_wires_in, cut_wires_out
+        if not ((x[1][0] in visited) and (x[1][1] in visited)):
+            cut_edges.append(x[1])
+    return visited, cut_edges
 
 
 def find_subgraphs(in_connections, out_connections, subraph_size, init_starting_nodes, all_nodes):
