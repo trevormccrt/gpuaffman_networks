@@ -15,12 +15,16 @@ def find_connected_subgraph(graph: nx.MultiDiGraph, max_subgraph_size, starting_
         this_node = to_visit.pop()[0]
         if not this_node in visited:
             visited.append(this_node)
-            for next_node in graph.predecessors(this_node):
+            all_in_edges = graph.in_edges(nbunch=(this_node), keys=True, data=True)
+            in_nodes = [x[0] for x in all_in_edges]
+            for next_node, edge in zip(in_nodes, all_in_edges):
                 if not next_node in visited:
-                    to_visit.appendleft((next_node, (next_node, this_node)))
-            for next_node in graph.successors(this_node):
+                    to_visit.appendleft((next_node, edge))
+            all_out_edges = graph.out_edges(nbunch=(this_node), keys=True, data=True)
+            out_nodes = [x[1] for x in all_out_edges]
+            for next_node, edge in zip(out_nodes, all_out_edges):
                 if not next_node in visited:
-                    to_visit.appendleft((next_node, (this_node, next_node)))
+                    to_visit.appendleft((next_node, edge))
     cut_edges = []
     for x in to_visit:
         if not ((x[1][0] in visited) and (x[1][1] in visited)):
@@ -28,27 +32,25 @@ def find_connected_subgraph(graph: nx.MultiDiGraph, max_subgraph_size, starting_
     return visited, cut_edges
 
 
-def find_subgraphs(in_connections, out_connections, subraph_size, init_starting_nodes, all_nodes):
+def find_subgraphs(graph, subgraph_size, init_starting_nodes):
     starting_nodes = init_starting_nodes
     full_subgraph = []
-    full_cut_wires_in = []
-    full_cut_wires_out = []
+    full_cut_wires = []
     while True:
-        subgraph, cut_wires_in, cut_wires_out = find_connected_subgraph(in_connections, out_connections, subraph_size-len(full_subgraph), starting_nodes)
+        subgraph, cut_wires = find_connected_subgraph(graph, subgraph_size - len(full_subgraph), starting_nodes)
         full_subgraph += subgraph
-        full_cut_wires_in += cut_wires_in
-        full_cut_wires_out += cut_wires_out
-        if len(full_subgraph) == subraph_size:
+        full_cut_wires += cut_wires
+        if len(full_subgraph) == subgraph_size:
             break
         avail_nodes = []
-        for node in all_nodes:
+        for node in graph.nodes:
             if not node in full_subgraph:
                 avail_nodes.append(node)
         if not avail_nodes:
             raise RuntimeError("Subgraph size impossible to find")
         starting_nodes = np.random.choice(avail_nodes, (1))
 
-    return full_subgraph, full_cut_wires_in, full_cut_wires_out
+    return full_subgraph, full_cut_wires
 
 
 def connection_array_to_dict(connections, used_connections, node_labels=None):
@@ -87,24 +89,18 @@ def graph_to_connection_spec(graph: nx.DiGraph):
     return connections, used_connections
 
 
-def strip_node(connections_dict, to_strip):
-    removed_connections = []
-    for x in to_strip:
-        removed_connections += [(x, j) for j in connections_dict[x]]
-    stripped_connections_dict = copy.deepcopy(connections_dict)
-    [stripped_connections_dict.pop(x) for x in to_strip]
-    for key, value in stripped_connections_dict.items():
-        keep_values = []
-        for x in value:
-            if not x in to_strip:
-                keep_values.append(x)
-        stripped_connections_dict[key] = keep_values
-    return removed_connections, stripped_connections_dict
+def strip_node(graph: nx.MultiDiGraph, nodes_to_strip):
+    cut_edges = []
+    for edge in graph.edges(keys=True, data=True):
+        if (edge[0] in nodes_to_strip) ^ (edge[1] in nodes_to_strip):
+            cut_edges.append(edge)
+    stripped_graph = copy.deepcopy(graph)
+    stripped_graph.remove_nodes_from(nodes_to_strip)
+    return stripped_graph, cut_edges
 
 
-def split_parents(nodes_1, in_connections_1, out_connections_1, nodes_2, in_connections_2, out_connections_2, size_first, size_second, special_nodes):
-    first_subgraph, first_cut_wires_in, first_cut_wires_out = find_subgraphs(
-        in_connections_1, out_connections_1, size_first, np.random.choice(nodes_1, (1)), nodes_1)
+def split_parents(graph_1, graph_2, size_first, size_second, special_nodes):
+    first_subgraph, first_cut_wires = find_subgraphs(graph_1, size_first, np.random.choice(list(graph_1.nodes), (1)))
     special_first = []
     seeds_second = []
     for snode in special_nodes:
@@ -112,29 +108,15 @@ def split_parents(nodes_1, in_connections_1, out_connections_1, nodes_2, in_conn
             seeds_second.append(snode)
         else:
             special_first.append(snode)
-    deleted_in, stripped_second_in = strip_node(in_connections_2, special_first)
-    deleted_out, stripped_second_out = strip_node(out_connections_2, special_first)
-    avail_nodes_2 = []
-    for node in nodes_2:
-        if not node in special_first:
-            avail_nodes_2.append(node)
-    second_cut_wires_in = []
-    second_cut_wires_out = []
-    second_cut_wires_out += [x[::-1] for x in deleted_in]
-    second_cut_wires_in += [x for x in deleted_out]
-    second_subgraph, second_cut_wires_in, second_cut_wires_out = find_subgraphs(
-        stripped_second_in, stripped_second_out, size_second, seeds_second, avail_nodes_2)
-    for item in deleted_in:
-        if item[1] in second_subgraph:
-            second_cut_wires_out += [item[::-1]]
-    for item in deleted_out:
-        if item[1] in second_subgraph:
-            second_cut_wires_in += [item]
-    return first_subgraph, first_cut_wires_in, first_cut_wires_out, \
-        second_subgraph, second_cut_wires_in, second_cut_wires_out
+    pruned_second, removed_special = strip_node(graph_2, special_first)
+    second_subgraph, second_cut_wires = find_subgraphs(pruned_second, size_second, seeds_second)
+    for item in removed_special:
+        if item[0] in second_subgraph or item[1] in second_subgraph:
+            second_cut_wires.append(item)
+    return first_subgraph, first_cut_wires, second_subgraph, second_cut_wires
 
 
-def match_wiring(subgraph_from, subgraph_to, to_in, from_out):
+def match_wiring():
     num_ports_in = {}
     for item in subgraph_to:
         num_ports_in[item] = np.sum([x[1] == item for x in to_in])
@@ -149,10 +131,9 @@ def match_wiring(subgraph_from, subgraph_to, to_in, from_out):
     return new_edges
 
 
+def sort_cut_edges(nodes, edges):
+    
+
+def mend_edges_random(subgraph_1, cut_edges_1, subgraph_2, cut_edges_2):
 
 
-def mend_cut_wires(first_subgraph, first_cut_wires_in, first_cut_wires_out,
-                   second_subgraph, second_cut_wires_in, second_cut_wires_out):
-    edges_in_first = match_wiring(second_subgraph, first_subgraph, first_cut_wires_in, second_cut_wires_out)
-    edges_in_second = match_wiring(first_subgraph, second_subgraph, second_cut_wires_in, first_cut_wires_out)
-    return edges_in_first + edges_in_second
