@@ -1,6 +1,7 @@
 import copy
 import random
 from collections import deque
+import networkx as nx
 import numpy as np
 
 
@@ -64,6 +65,30 @@ def connection_array_to_dict(connections, used_connections, node_labels=None):
         in_connections[node_labels[idx[0]]] = in_connections[node_labels[idx[0]]] + [node_labels[connections[idx[0], idx[1]]]]
         out_connections[node_labels[connections[idx[0], idx[1]]]] = out_connections[node_labels[connections[idx[0], idx[1]]]] + [node_labels[idx[0]]]
     return in_connections, out_connections
+
+
+def connection_spec_to_graph(connections, used_connections, node_labels):
+    g = nx.MultiDiGraph(max_k=connections.shape[1])
+    nodes = [(x, {"ordering": y}) for y, x in enumerate(node_labels)]
+    g.add_nodes_from(nodes)
+    edges = []
+    active_connections = np.argwhere(used_connections)
+    for connection in active_connections:
+        edges.append((node_labels[connections[connection[0], connection[1]]], node_labels[connection[0]] , {"fn_row": connection[1]}))
+    g.add_edges_from(edges)
+    return g
+
+
+def graph_to_connection_spec(graph: nx.DiGraph):
+    N = graph.number_of_nodes()
+    k_max = graph.graph["max_k"]
+    position_map = dict([(node[0],node[1]["ordering"]) for node in graph.nodes(data=True)])
+    used_connections = np.zeros((N, k_max), dtype=np.bool_)
+    connections = np.random.randint(0, N, (N, k_max), dtype=np.uint8)
+    for edge in graph.edges(data=True):
+        connections[position_map[edge[1]], edge[2]["fn_row"]] = position_map[edge[0]]
+        used_connections[position_map[edge[1]], edge[2]["fn_row"]] = True
+    return connections, used_connections
 
 
 def strip_node(connections_dict, to_strip):

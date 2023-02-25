@@ -24,6 +24,39 @@ def test_connection_spec_to_dict():
             assert sorted(this_in) == sorted(in_connections[i])
 
 
+def test_connection_spec_to_graph():
+    for j in range(10):
+        N = np.random.randint(10, 30)
+        k_max = np.random.randint(5, 8)
+        connections = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
+        used_connections = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+        node_labels = np.arange(start=0, stop=N, step=1)
+        np.random.shuffle(node_labels)
+        g = graph_crossover.connection_spec_to_graph(connections, used_connections, node_labels)
+        assert g.graph["max_k"] == k_max
+        n_active_conections = np.sum(used_connections)
+        edges = list(g.edges(data=True))
+        assert n_active_conections == len(edges)
+        for edge in edges:
+            index_from = g.nodes[edge[0]]["ordering"]
+            index_to = g.nodes[edge[1]]["ordering"]
+            assert connections[index_to, edge[2]["fn_row"]] == index_from
+
+
+def test_graph_to_connection_spec():
+    for j in range(10):
+        N = np.random.randint(10, 30)
+        k_max = np.random.randint(4, 8)
+        connections = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
+        used_connections = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+        node_labels = np.arange(start=0, stop=N, step=1)
+        np.random.shuffle(node_labels)
+        g = graph_crossover.connection_spec_to_graph(connections, used_connections, node_labels)
+        found_connections, found_used_connections = graph_crossover.graph_to_connection_spec(g)
+        np.testing.assert_equal(used_connections, found_used_connections)
+        np.testing.assert_equal(connections * used_connections, found_connections * found_used_connections)
+
+
 def test_labeled_connection_spec_to_dict():
     for j in range(10):
         N = np.random.randint(0, 30)
@@ -185,3 +218,6 @@ def test_simple_wiring():
                                                                                                    special_nodes)
     graph_crossover.mend_cut_wires(first_subgraph, first_cut_wires_in, first_cut_wires_out,
                                   second_subgraph, second_cut_wires_in, second_cut_wires_out)
+
+
+test_graph_to_connection_spec()
