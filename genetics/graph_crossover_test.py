@@ -211,3 +211,54 @@ def test_mend_edges_random():
     for edge in cut_edges_2:
         if edge[1] in subgraph_2 and edge[0] in subgraph_1:
             assert edge in new_edges_2
+
+
+def test_merge_indices():
+    N = 20
+    special_nodes = [0, 1, 2]
+    org_1_indices = np.arange(start=0, stop=N, step=1)
+    org_2_indices = np.arange(start=N, stop=2*N, step=1)
+    fake_nodes_1 = [(x, {"ordering": np.argwhere(org_1_indices == x)[0][0], "org_num":0}) for x in org_1_indices]
+    fake_nodes_2 = [(x, {"ordering": np.argwhere(org_2_indices == x)[0][0], "org_num": 1}) for x in org_2_indices]
+    update_dicts, org_0_map, org_1_map = graph_crossover.merge_pair_ordering(fake_nodes_1 + fake_nodes_2, special_nodes)
+    used_ind = []
+    for key, value in update_dicts.items():
+        if key in special_nodes:
+            assert value["ordering"] == key
+        else:
+            assert not value["ordering"] in used_ind
+        used_ind.append(value["ordering"])
+        if key in org_1_indices:
+            assert org_0_map[key] == value["ordering"]
+        if key in org_2_indices:
+            assert org_1_map[np.argwhere(org_2_indices == key)[0][0]] == value["ordering"]
+
+
+def test_network_crossover_random():
+    np.random.seed(1112)
+    N = 20
+    k_max = 3
+    N = np.random.randint(10, 30)
+    k_max = np.random.randint(5, 8)
+    special_nodes = [0, 1, 2]
+    functions_1 = np.random.binomial(1, 0.5, (N, 1 << k_max))
+    connections_1 = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
+    used_connections_1 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+    functions_2 = np.random.binomial(1, 0.5, (N, 1 << k_max))
+    connections_2 = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
+    used_connections_2 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+    new_connections, new_used_connections, org_0_map, org_1_map = graph_crossover.network_crossover_random(
+        connections_1, used_connections_1, connections_2,used_connections_2, special_nodes, int(N/3))
+    for key, value in org_0_map.items():
+        a = used_connections_1[key]
+        c = connections_1[key]
+        b = new_used_connections[value]
+        d = new_connections[value]
+        assert np.all(np.equal(used_connections_1[key], new_used_connections[value]))
+    for key, value in org_1_map.items():
+        assert np.all(np.equal(used_connections_2[key], new_used_connections[value]))
+
+        print("")
+
+
+test_network_crossover_random()

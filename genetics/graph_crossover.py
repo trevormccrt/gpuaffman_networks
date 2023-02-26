@@ -53,21 +53,9 @@ def find_subgraphs(graph, subgraph_size, init_starting_nodes):
     return full_subgraph, full_cut_wires
 
 
-def connection_array_to_dict(connections, used_connections, node_labels=None):
-    if node_labels is None:
-        node_labels = np.arange(start=0, stop=connections.shape[0], step=1)
-    in_connections = dict([(i, []) for i in node_labels])
-    out_connections = dict([(i, []) for i in node_labels])
-    active_ind = np.argwhere(used_connections)
-    for idx in active_ind:
-        in_connections[node_labels[idx[0]]] = in_connections[node_labels[idx[0]]] + [node_labels[connections[idx[0], idx[1]]]]
-        out_connections[node_labels[connections[idx[0], idx[1]]]] = out_connections[node_labels[connections[idx[0], idx[1]]]] + [node_labels[idx[0]]]
-    return in_connections, out_connections
-
-
-def connection_spec_to_graph(connections, used_connections, node_labels):
+def connection_spec_to_graph(connections, used_connections, node_labels, org_num=0):
     g = nx.MultiDiGraph(max_k=connections.shape[1])
-    nodes = [(x, {"ordering": y}) for y, x in enumerate(node_labels)]
+    nodes = [(x, {"ordering": y, "org_num": org_num}) for y, x in enumerate(node_labels)]
     g.add_nodes_from(nodes)
     edges = []
     active_connections = np.argwhere(used_connections)
@@ -156,4 +144,49 @@ def graph_crossover_random(graph_1, graph_2, special_nodes, size_cut_1):
     return first_subgraph, first_cut_wires, new_edges_1, second_subgraph, second_cut_wires, new_edges_2
 
 
-def network_crossover_random(functions_1, )
+def combine_subgraphs(first_graph, second_graph, first_subgraph, second_subgraph, new_edges):
+    cut_graph_1 = first_graph.subgraph(first_subgraph)
+    cut_graph_2 = second_graph.subgraph(second_subgraph)
+    total_graph = nx.MultiDiGraph(max_k=first_graph.graph["max_k"])
+    total_graph.add_nodes_from(list(cut_graph_1.nodes(data=True)) + list(cut_graph_2.nodes(data=True)))
+    total_graph.add_edges_from(list(cut_graph_1.edges(keys=True, data=True)) + list(
+        cut_graph_2.edges(keys=True, data=True)) + new_edges)
+    return total_graph
+
+
+def merge_pair_ordering(nodes_with_data, special_nodes):
+    org_0_map = {}
+    org_1_map = {}
+    update_dicts = {}
+    non_special_node_labels = np.arange(start=np.max(special_nodes)+1,
+                                        stop=np.max(special_nodes) + len(nodes_with_data) - len(special_nodes) + 1, step=1)
+    counter = 0
+    for node in nodes_with_data:
+        new_ordering = node[0]
+        if not node[0] in special_nodes:
+            new_ordering = non_special_node_labels[counter]
+            counter += 1
+        update_dicts[node[0]] = {"ordering": new_ordering, "org_num":0}
+        if node[1]["org_num"]:
+            org_1_map[node[1]["ordering"]] = new_ordering
+        else:
+            org_0_map[node[1]["ordering"]] = new_ordering
+    return update_dicts, org_0_map, org_1_map
+
+
+def network_crossover_random(connections_1, used_connections_1, connections_2, used_connections_2,
+                             special_nodes, size_first):
+    N = connections_1.shape[-2]
+    node_labels_1 = np.arange(start=0, stop=N, step=1)
+    node_labels_2 = np.arange(start=N, stop=2*N, step=1)
+    node_labels_2[special_nodes] = special_nodes
+    graph_1 = connection_spec_to_graph(connections_1, used_connections_1, node_labels_1, org_num=0)
+    graph_2 = connection_spec_to_graph(connections_2, used_connections_2, node_labels_2, org_num=1)
+    first_subgraph, first_cut_wires, new_edges_1, \
+        second_subgraph, second_cut_wires, new_edges_2 = graph_crossover_random(
+        graph_1, graph_2, special_nodes, size_first)
+    total_graph = combine_subgraphs(graph_1, graph_2, first_subgraph, second_subgraph, new_edges_1 + new_edges_2)
+    merged_nodes, org_0_map, org_1_map = merge_pair_ordering(total_graph.nodes(data=True), special_nodes)
+    nx.set_node_attributes(total_graph, merged_nodes)
+    return *graph_to_connection_spec(total_graph), org_0_map, org_1_map
+
