@@ -153,5 +153,7 @@ def graph_crossover_random(graph_1, graph_2, special_nodes, size_cut_1):
     first_subgraph, first_cut_wires, second_subgraph, second_cut_wires = split_parents(
         graph_1, graph_2, size_cut_1, size_cut_2, special_nodes)
     new_edges_1, new_edges_2 = mend_edges_random(first_subgraph, first_cut_wires, second_subgraph, second_cut_wires)
-    return first_subgraph, new_edges_1, second_subgraph, new_edges_2
+    return first_subgraph, first_cut_wires, new_edges_1, second_subgraph, second_cut_wires, new_edges_2
 
+
+def network_crossover_random(functions_1, )
