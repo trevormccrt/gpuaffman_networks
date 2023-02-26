@@ -1,5 +1,4 @@
 import copy
-
 import networkx as nx
 import numpy as np
 
@@ -164,37 +163,51 @@ def test_split_parents():
             nx_second_else.edges(data=True, keys=True)) + second_cut_wires)
         _compare_graphs(graph_2, equiv_graph_2)
 
-#
-#
-# def test_simple_wiring():
-#     graph_con_1 = np.array([[1, 2], [0, 3], [4, 0], [1, 2], [5, 3], [4, 6], [4, 5]])
-#     graph_used_con_1 = np.array(
-#         [[True, True], [True, True], [True, True], [True, True], [True, True], [True, True], [True, True]])
-#     graph_con_2 = np.array([[1, 5], [4, 3], [4, 1], [4, 2], [5, 6], [1, 6], [4, 2]])
-#     graph_used_con_2 = np.array(
-#         [[True, True], [True, True], [True, True], [True, True], [True, True], [True, True], [True, True]])
-#     N_breed_test = graph_con_1.shape[0]
-#     # %%
-#     special_nodes = [0, 1, 2]
-#     first_node_labels = np.arange(start=0, stop=N_breed_test, step=1)
-#     second_node_labels = np.arange(start=N_breed_test, stop=2 * N_breed_test, step=1)
-#     second_node_labels[:len(special_nodes)] = special_nodes
-#     # %%
-#     first_in, first_out = graph_crossover.connection_array_to_dict(graph_con_1, graph_used_con_1, first_node_labels)
-#     second_in, second_out = graph_crossover.connection_array_to_dict(graph_con_2, graph_used_con_2, second_node_labels)
-#     size_first = 4
-#     size_second = N_breed_test - size_first
-#     first_subgraph, first_cut_wires_in, first_cut_wires_out, \
-#         second_subgraph, second_cut_wires_in, second_cut_wires_out = graph_crossover.split_parents(first_node_labels,
-#                                                                                                    first_in, first_out,
-#                                                                                                    second_node_labels,
-#                                                                                                    second_in,
-#                                                                                                    second_out,
-#                                                                                                    size_first,
-#                                                                                                    size_second,
-#                                                                                                    special_nodes)
-#     graph_crossover.mend_cut_wires(first_subgraph, first_cut_wires_in, first_cut_wires_out,
-#                                   second_subgraph, second_cut_wires_in, second_cut_wires_out)
-#
-#
-test_split_parents()
+
+def test_sort_edges():
+    nodes = [0, 1, 2, 3]
+    all_edges = [(0, 5), (4, 1), (3, 7), (8, 2)]
+    edges_in, edges_out = graph_crossover.sort_cut_edges(nodes, all_edges)
+    assert set(edges_in) == {(4, 1), (8, 2)}
+    assert set(edges_out) == {(0, 5), (3, 7)}
+
+
+def test_rewire_inputs_random():
+    subgraph_from = [6, 7, 8, 9]
+    rewire_edges_in = [(6, 0, 0, {"data": 0}), (7, 1, 0, {"data": 1}), (11, 3, 0, {"data": 2}), (12, 5, 0, {"data": 3}),
+                       (12, 3, 0, {"data": 4}), (11, 2, 0, {"data": 5})]
+    rewire_edges_out = [(9, 3, 0, {"data": 0}), (8, 2, 0, {"data": 1}), (7, 1, 0, {"data": 2}), (6, 3, 0, {"data": 3}),
+                        (6, 4, 0, {"data": 4}), (6, 3, 0, {"data": 5})]
+    new_edges = graph_crossover.rewire_inputs_random(subgraph_from, rewire_edges_in, rewire_edges_out)
+    possible_new_node_choices = [x[0] for x in rewire_edges_out]
+    detected_remap_dict = {}
+    for old_edge, new_edge in zip(rewire_edges_in, new_edges):
+        if old_edge[0] in subgraph_from:
+            assert new_edge[0] == old_edge[0]
+        else:
+            assert new_edge[0] in possible_new_node_choices
+            if old_edge[0] in detected_remap_dict:
+                assert new_edge[0] == detected_remap_dict[old_edge[0]]
+            else:
+                detected_remap_dict[old_edge[0]] = new_edge[0]
+        assert old_edge[1:] == new_edge[1:]
+
+
+def test_mend_edges_random():
+    subgraph_1 = [0, 1, 2, 3, 4]
+    subgraph_2 = [10, 11, 12, 13, 14]
+    cut_edges_1 = ((5, 0), (0, 7), (10, 2), (4, 9))
+    cut_edges_2 = [(5, 10), (5, 11), (3, 12), (12, 0), (13, 7), (14, 5)]
+    new_edges_1, new_edges_2 = graph_crossover.mend_edges_random(subgraph_1, cut_edges_1, subgraph_2, cut_edges_2)
+    assert len(new_edges_1) == 2
+    assert len(new_edges_2) == 3
+    assert np.all([x[0] in subgraph_2 for x in new_edges_1])
+    assert np.all([x[1] in subgraph_1 for x in new_edges_1])
+    assert np.all([x[0] in subgraph_1 for x in new_edges_2])
+    assert np.all([x[1] in subgraph_2 for x in new_edges_2])
+    for edge in cut_edges_1:
+        if edge[1] in subgraph_1 and edge[0] in subgraph_2:
+            assert edge in new_edges_1
+    for edge in cut_edges_2:
+        if edge[1] in subgraph_2 and edge[0] in subgraph_1:
+            assert edge in new_edges_2

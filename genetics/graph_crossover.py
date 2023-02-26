@@ -116,24 +116,42 @@ def split_parents(graph_1, graph_2, size_first, size_second, special_nodes):
     return first_subgraph, first_cut_wires, second_subgraph, second_cut_wires
 
 
-def match_wiring():
-    num_ports_in = {}
-    for item in subgraph_to:
-        num_ports_in[item] = np.sum([x[1] == item for x in to_in])
-    new_edges = []
-    for item in to_in:
-        from_node = item[0]
-        to_node = item[1]
-        if from_node in subgraph_from and num_ports_in[to_node]>0:
-            num_ports_in[to_node] -= 1
-            new_edges.append(item)
-    print("")
-    return new_edges
-
-
 def sort_cut_edges(nodes, edges):
-    
+    edges_in = []
+    edges_out = []
+    for edge in edges:
+        if edge[0] in nodes:
+            edges_out.append(edge)
+        else:
+            edges_in.append(edge)
+    return edges_in, edges_out
+
+
+def rewire_inputs_random(subgraph_from, edges_in_to, edges_out_from):
+    in_nodes_to_replace = list(set([x[0] for x in edges_in_to]))
+    out_avail_nodes = [x[0] for x in edges_out_from]
+    node_map = {}
+    for node_in in in_nodes_to_replace:
+        if node_in in subgraph_from:
+            node_map[node_in] = node_in
+        else:
+            node_map[node_in] = np.random.choice(out_avail_nodes)
+    return [(node_map[x[0]], *x[1:]) for x in edges_in_to]
+
 
 def mend_edges_random(subgraph_1, cut_edges_1, subgraph_2, cut_edges_2):
+    edges_in_1, edges_out_1 = sort_cut_edges(subgraph_1, cut_edges_1)
+    edges_in_2, edges_out_2 = sort_cut_edges(subgraph_2, cut_edges_2)
+    new_edges_1 = rewire_inputs_random(subgraph_2, edges_in_1, edges_out_2)
+    new_edges_2 = rewire_inputs_random(subgraph_1, edges_in_2, edges_out_1)
+    return new_edges_1, new_edges_2
 
+
+def graph_crossover_random(graph_1, graph_2, special_nodes, size_cut_1):
+    N = len(graph_1.nodes)
+    size_cut_2 = N - size_cut_1
+    first_subgraph, first_cut_wires, second_subgraph, second_cut_wires = split_parents(
+        graph_1, graph_2, size_cut_1, size_cut_2, special_nodes)
+    new_edges_1, new_edges_2 = mend_edges_random(first_subgraph, first_cut_wires, second_subgraph, second_cut_wires)
+    return first_subgraph, new_edges_1, second_subgraph, new_edges_2
 
