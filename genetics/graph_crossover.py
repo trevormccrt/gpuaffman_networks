@@ -1,5 +1,4 @@
 import copy
-import random
 from collections import deque
 import networkx as nx
 import numpy as np
@@ -27,7 +26,7 @@ def find_connected_subgraph(graph: nx.MultiDiGraph, max_subgraph_size, starting_
                     to_visit.appendleft((next_node, edge))
     cut_edges = []
     for x in to_visit:
-        if not ((x[1][0] in visited) and (x[1][1] in visited)):
+        if not (((x[1][0] in visited) and (x[1][1] in visited))):
             cut_edges.append(x[1])
     return visited, cut_edges
 
@@ -150,7 +149,7 @@ def combine_subgraphs(first_graph, second_graph, first_subgraph, second_subgraph
     total_graph = nx.MultiDiGraph(max_k=first_graph.graph["max_k"])
     total_graph.add_nodes_from(list(cut_graph_1.nodes(data=True)) + list(cut_graph_2.nodes(data=True)))
     total_graph.add_edges_from(list(cut_graph_1.edges(keys=True, data=True)) + list(
-        cut_graph_2.edges(keys=True, data=True)) + new_edges)
+        cut_graph_2.edges(keys=True, data=True)) + [(*x[:2], *x[3:]) for x in new_edges ])
     return total_graph
 
 
@@ -190,3 +189,9 @@ def network_crossover_random(connections_1, used_connections_1, connections_2, u
     nx.set_node_attributes(total_graph, merged_nodes)
     return *graph_to_connection_spec(total_graph), org_0_map, org_1_map
 
+
+def merge_functions(functions_1, functions_2, org_1_map, org_2_map):
+    new_functions = functions_1.copy()
+    new_functions[list(org_1_map.values())] = functions_1[list(org_1_map.keys())]
+    new_functions[list(org_2_map.values())] = functions_2[list(org_2_map.keys())]
+    return new_functions

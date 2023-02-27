@@ -101,7 +101,7 @@ def test_strip_node():
     g.add_nodes_from([0, 1, 2, 3])
     g.add_edges_from([(0, 1), (1, 2), (2, 3), (2, 0), (3, 0)])
     stripped_graph, cut_edges = graph_crossover.strip_node(g, [1, 3])
-    assert set(cut_edges) == {(0, 1, 0), (1, 2, 0), (2, 3, 0), (3, 0, 0)}
+    assert set([x[:3] for x in cut_edges]) == {(0, 1, 0), (1, 2, 0), (2, 3, 0), (3, 0, 0)}
     assert sorted(stripped_graph.nodes) == [0, 2]
 
 
@@ -235,30 +235,36 @@ def test_merge_indices():
 
 
 def test_network_crossover_random():
-    np.random.seed(1112)
-    N = 20
-    k_max = 3
+    for i in range(50):
+        N = np.random.randint(10, 30)
+        k_max = np.random.randint(5, 8)
+        special_nodes = [0, 1, 2]
+        connections_1 = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
+        used_connections_1 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+        connections_2 = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
+        used_connections_2 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+        new_connections, new_used_connections, org_0_map, org_1_map = graph_crossover.network_crossover_random(
+            connections_1, used_connections_1, connections_2,used_connections_2, special_nodes, int(N/3))
+        for key, value in org_0_map.items():
+            assert np.all(used_connections_1[key] == new_used_connections[value])
+        for key, value in org_1_map.items():
+            assert np.all(np.equal(used_connections_2[key], new_used_connections[value]))
+
+
+def test_merge_functions():
     N = np.random.randint(10, 30)
     k_max = np.random.randint(5, 8)
-    special_nodes = [0, 1, 2]
-    functions_1 = np.random.binomial(1, 0.5, (N, 1 << k_max))
-    connections_1 = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
-    used_connections_1 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
-    functions_2 = np.random.binomial(1, 0.5, (N, 1 << k_max))
-    connections_2 = np.random.randint(0, N, (N, k_max)).astype(np.uint8)
-    used_connections_2 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
-    new_connections, new_used_connections, org_0_map, org_1_map = graph_crossover.network_crossover_random(
-        connections_1, used_connections_1, connections_2,used_connections_2, special_nodes, int(N/3))
-    for key, value in org_0_map.items():
-        a = used_connections_1[key]
-        c = connections_1[key]
-        b = new_used_connections[value]
-        d = new_connections[value]
-        assert np.all(np.equal(used_connections_1[key], new_used_connections[value]))
+    functions_1 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+    functions_2 = np.random.binomial(1, 0.5, (N, k_max)).astype(np.bool_)
+    org_1_stop = int(N/2)
+    org_1_keep = np.arange(start=0, stop=org_1_stop, step=1)
+    org_2_keep = np.arange(start=org_1_stop, stop=N, step=1)
+    ordering = np.arange(start=0, stop=N, step=1)
+    np.random.shuffle(ordering)
+    org_1_map = dict(zip(org_1_keep, ordering[:len(org_1_keep)]))
+    org_2_map = dict(zip(org_2_keep, ordering[len(org_1_keep):]))
+    new_functions = graph_crossover.merge_functions(functions_1, functions_2, org_1_map, org_2_map)
     for key, value in org_1_map.items():
-        assert np.all(np.equal(used_connections_2[key], new_used_connections[value]))
-
-        print("")
-
-
-test_network_crossover_random()
+        assert np.all(new_functions[value] == functions_1[key])
+    for key, value in org_2_map.items():
+        assert np.all(new_functions[value] == functions_2[key])
