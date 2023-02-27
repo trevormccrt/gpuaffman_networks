@@ -14,7 +14,7 @@ def dump_population_data(out_dir, file_name, functions, connectivity, used_conne
 
 
 def evolve_batch(N, k_max, population_size, keep_best, n_populations, n_trajectories, noise_prob,
-                 mutation_rate, init_avg_k, n_generations, timesteps, f_input_state, f_eval,
+                 mutation_rate, init_avg_k, n_generations, timesteps, f_input_state, f_eval, f_breed, f_mutate,
                  results_dir, results_fname, using_cuda=False, checkpointing_dir=None, checkpointing_freq=100):
     xp = np
     if using_cuda:
@@ -35,14 +35,10 @@ def evolve_batch(N, k_max, population_size, keep_best, n_populations, n_trajecto
     best_used_connectivity = np.zeros(used_connectivity[:, 0, :, :].shape).astype(np.bool_)
     best_errors = np.array([np.inf] * n_populations)
 
-    binary_mutation_fn = lambda x: ragged_task_evolution.mutate_binary(x, mutation_rate)
-    integer_mutation_fn = lambda x: ragged_task_evolution.mutate_integer(x, mutation_rate, N)
-
     for generation in range(n_generations):
         functions, connectivity, used_connectivity, population_errors = ragged_task_evolution.evolutionary_step(
             input_state_batched, n_trajectories, functions, connectivity, used_connectivity,
-            timesteps + np.random.randint(0, 5), noise_prob, f_eval,
-            ragged_task_evolution.split_breed_data, n_children, binary_mutation_fn, integer_mutation_fn)
+            timesteps + np.random.randint(0, 5), noise_prob, f_eval, f_breed, n_children, f_mutate)
         if generation % checkpointing_freq == 0:
             print("GENERATION {} ERRORS {}".format(generation, sorted(best_errors)))
             if checkpointing_dir is not None:

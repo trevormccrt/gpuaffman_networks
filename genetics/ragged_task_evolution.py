@@ -25,12 +25,15 @@ def sample_breeding_pairs(data, n_children):
     return select_breeding_pairs_from_indicies(data, indicies)
 
 
-def pair_breed_swap(first_parents, second_parents,  p_first=0.5):
-    from_first_ind = np.argwhere(np.tile(np.expand_dims(np.random.binomial(1, p_first, first_parents.shape[:-1]), -1), first_parents.shape[-1])==1)
+def pair_breed_swap(first_parents, second_parents,  from_first_ind):
     children = np.copy(second_parents)
     slices = tuple(from_first_ind[:, i] for i in range(np.ndim(children)))
     children[slices] = first_parents[slices]
     return children
+
+def pair_breed_swap_all(function_parents, connectivity_parents, used_connectivity_parents, n_children, p_first=0.5):
+    from_first_ind = np.argwhere(np.tile(np.expand_dims(np.random.binomial(1, p_first, first_parents.shape[:-1]), -1), first_parents.shape[-1])==1)
+
 
 
 def pair_breed_random(first_parents, second_parents, p_first=0.5):
@@ -67,6 +70,13 @@ def mutate_integer(data, mutation_rate, rollover):
     return np.mod(data + xp.random.binomial(1, mutation_rate, data.shape).astype(data.dtype), rollover)
 
 
+def mutate_equal_prob(functions, connectivity, used_connectivity, mutation_rate):
+    N = functions.shape[-2]
+    return mutate_binary(functions, mutation_rate),\
+        mutate_integer(connectivity, mutation_rate, N),\
+        mutate_binary(used_connectivity, mutation_rate)
+
+
 def run_dynamics_forward(input_state, functions, connections, used_connections, n_timesteps, p_noise):
     xp = np
     if isinstance(input_state, cp.ndarray):
@@ -85,7 +95,7 @@ def evaluate_populations(input_states, n_trajectories, functions, connectivity,
                              functions, connectivity, used_connectivity, n_timesteps, noise_prob))
 
 
-def evolutionary_step(input_states, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval, breeding_fn, n_children, binary_mutation_fn, integer_mutation_fn):
+def evolutionary_step(input_states, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval, breeding_fn, n_children, mutation_fn):
     n_populations = input_states.shape[-3]
     pop_size = input_states.shape[-2]
     keep_best = pop_size - n_children
@@ -101,15 +111,17 @@ def evolutionary_step(input_states, n_trajectories, functions, connectivity, use
     best_connectivity = np.take_along_axis(connectivity, expand_sort_error_rates, 1)[:, :keep_best, :, :]
     best_used_connectivity = np.take_along_axis(used_connectivity, expand_sort_error_rates, 1)[:, :keep_best, :, :]
 
-    function_children = binary_mutation_fn(breeding_fn(best_functions, parents, n_children))
-    connectivity_children = integer_mutation_fn(breeding_fn(best_connectivity,
-                                                      parents, n_children))
-    used_connectivity_children = binary_mutation_fn(breeding_fn(used_connectivity,
-                                                          parents, n_children))
+    function_children, connectivity_children, used_connectivity_children = breeding_fn(
+        select_breeding_pairs_from_indicies(best_functions, parents),
+        select_breeding_pairs_from_indicies(best_connectivity, parents),
+        select_breeding_pairs_from_indicies(best_used_connectivity, parents), n_children)
 
-    functions = np.concatenate([best_functions, function_children], axis=1)
-    connectivity = np.concatenate([best_connectivity, connectivity_children], axis=1)
-    used_connectivity = np.concatenate([best_used_connectivity, used_connectivity_children], axis=1)
+    mutated_function_children, mutated_connectivity_children, mutated_used_connectivity_children = mutation_fn(
+        function_children, connectivity_children, used_connectivity_children)
+
+    functions = np.concatenate([best_functions, mutated_function_children], axis=1)
+    connectivity = np.concatenate([best_connectivity, mutated_connectivity_children], axis=1)
+    used_connectivity = np.concatenate([best_used_connectivity, mutated_used_connectivity_children], axis=1)
 
     population_errors = np.mean(error_rates, axis=1)
     return functions, connectivity, used_connectivity, population_errors
