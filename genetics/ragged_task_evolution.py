@@ -6,6 +6,7 @@ except:
 import numpy as np
 
 import ragged_general_network
+from genetics import graph_crossover
 
 
 def sample_breeding_pairs_idx(population_batch_shape, n_children):
@@ -39,6 +40,38 @@ def pair_breed_swap_all(function_parents, connectivity_parents, used_connectivit
     return pair_breed_swap(*function_parents, from_first_mask),\
         pair_breed_swap(*connectivity_parents, from_first_mask),\
         pair_breed_swap(*used_connectivity_parents, from_first_mask)
+
+
+def graph_crossover_breed(function_parents, connectivity_parents, used_connectivity_parents, special_nodes):
+    N = function_parents[0].shape[-2]
+    connectivity_parents_1, connectivity_parents_2 = connectivity_parents
+    used_connectivity_parents_1, used_connectivity_parents_2 = used_connectivity_parents
+    using_cuda = False
+    if not isinstance(connectivity_parents[0], np.ndarray):
+        using_cuda = True
+        connectivity_parents_1 = cp.asnumpy(connectivity_parents_1)
+        connectivity_parents_2 = cp.asnumpy(connectivity_parents_2)
+        used_connectivity_parents_1 = cp.asnumpy(used_connectivity_parents_1)
+        used_connectivity_parents_2 = cp.asnumpy(used_connectivity_parents_2)
+    function_children = function_parents[0].copy()
+    connectivity_children = connectivity_parents_1.copy()
+    used_connectivity_children = used_connectivity_parents_1.copy()
+    for batch_idx in range(connectivity_parents_1.shape[0]):
+        for parent_idx in range(connectivity_parents_1.shape[1]):
+            size_first = np.random.randint(1, N - len(special_nodes) - 1)
+
+            this_connectivity, this_used_connectivity, org_0_map, org_1_map = graph_crossover.network_crossover_random(
+                connectivity_parents_1[batch_idx, parent_idx, ...], used_connectivity_parents_1[batch_idx, parent_idx, ...],
+                connectivity_parents_2[batch_idx, parent_idx, ...], used_connectivity_parents_2[batch_idx, parent_idx, ...],
+                special_nodes, size_first)
+
+            this_functions = graph_crossover.merge_functions(function_parents[0][batch_idx, parent_idx, ...],
+                                                             function_parents[1][batch_idx, parent_idx, ...],
+                                                             org_0_map, org_1_map)
+            connectivity_children[batch_idx, parent_idx, ...] = this_connectivity
+            used_connectivity_children[batch_idx, parent_idx, ...] = this_used_connectivity
+            function_children[batch_idx, parent_idx, ...] = this_functions
+    return function_children, connectivity_children, used_connectivity_children
 
 
 def pair_breed_random(first_parents, second_parents, p_first=0.5):

@@ -9,15 +9,15 @@ N = 8
 population_size = 70
 keep_best = int(0.4 * population_size)
 n_children = population_size - keep_best
-n_populations = 70
+n_populations = 20
 n_trajectories = 200
 noise_prob = 0.01
-mutation_rate = 0.001
+mutation_rate = 0.005
 
 init_avg_k = 2
 max_k = 3
 
-n_generations = 10000
+n_generations = 200
 n_memory_timesteps = 10
 
 a = os.getenv("DATA_DIR")
@@ -27,10 +27,12 @@ os.makedirs(out_dir, exist_ok=False)
 
 file_name = "batch_1.npz"
 
+f_breed = lambda f, c, uc : ragged_task_evolution.graph_crossover_breed(f, c, uc, [0, 1, 2])
+
 f_mutate = lambda f, c, uc: ragged_task_evolution.mutate_equal_prob(f, c, uc, mutation_rate)
 
 evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
                                mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
                                tasks.make_2_bit_input_state, tasks.evaluate_and_task,
-                               ragged_task_evolution.pair_breed_swap_all, f_mutate ,
+                               f_breed, f_mutate ,
                                out_dir, file_name, using_cuda=True, checkpointing_freq=10)

@@ -117,6 +117,8 @@ def sort_cut_edges(nodes, edges):
 def rewire_inputs_random(subgraph_from, edges_in_to, edges_out_from):
     in_nodes_to_replace = list(set([x[0] for x in edges_in_to]))
     out_avail_nodes = [x[0] for x in edges_out_from]
+    if not out_avail_nodes:
+        out_avail_nodes = subgraph_from
     node_map = {}
     for node_in in in_nodes_to_replace:
         if node_in in subgraph_from:
