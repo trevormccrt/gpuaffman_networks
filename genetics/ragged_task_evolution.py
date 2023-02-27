@@ -71,6 +71,9 @@ def graph_crossover_breed(function_parents, connectivity_parents, used_connectiv
             connectivity_children[batch_idx, parent_idx, ...] = this_connectivity
             used_connectivity_children[batch_idx, parent_idx, ...] = this_used_connectivity
             function_children[batch_idx, parent_idx, ...] = this_functions
+    if using_cuda:
+        connectivity_children = cp.array(connectivity_children)
+        used_connectivity_children = cp.array(used_connectivity_children)
     return function_children, connectivity_children, used_connectivity_children
 
 
