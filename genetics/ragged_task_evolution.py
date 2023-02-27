@@ -25,15 +25,20 @@ def sample_breeding_pairs(data, n_children):
     return select_breeding_pairs_from_indicies(data, indicies)
 
 
-def pair_breed_swap(first_parents, second_parents,  from_first_ind):
+def pair_breed_swap(first_parents, second_parents,  from_first_mask):
+    from_first_ind = np.argwhere(np.tile(from_first_mask, first_parents.shape[-1]) == 1)
     children = np.copy(second_parents)
     slices = tuple(from_first_ind[:, i] for i in range(np.ndim(children)))
     children[slices] = first_parents[slices]
     return children
 
-def pair_breed_swap_all(function_parents, connectivity_parents, used_connectivity_parents, n_children, p_first=0.5):
-    from_first_ind = np.argwhere(np.tile(np.expand_dims(np.random.binomial(1, p_first, first_parents.shape[:-1]), -1), first_parents.shape[-1])==1)
 
+def pair_breed_swap_all(function_parents, connectivity_parents, used_connectivity_parents, p_first=0.5):
+    batch_shape = function_parents[0].shape[:-1]
+    from_first_mask = np.expand_dims(np.random.binomial(1, p_first, batch_shape), -1)
+    return pair_breed_swap(*function_parents, from_first_mask),\
+        pair_breed_swap(*connectivity_parents, from_first_mask),\
+        pair_breed_swap(*used_connectivity_parents, from_first_mask)
 
 
 def pair_breed_random(first_parents, second_parents, p_first=0.5):
@@ -114,7 +119,7 @@ def evolutionary_step(input_states, n_trajectories, functions, connectivity, use
     function_children, connectivity_children, used_connectivity_children = breeding_fn(
         select_breeding_pairs_from_indicies(best_functions, parents),
         select_breeding_pairs_from_indicies(best_connectivity, parents),
-        select_breeding_pairs_from_indicies(best_used_connectivity, parents), n_children)
+        select_breeding_pairs_from_indicies(best_used_connectivity, parents))
 
     mutated_function_children, mutated_connectivity_children, mutated_used_connectivity_children = mutation_fn(
         function_children, connectivity_children, used_connectivity_children)
