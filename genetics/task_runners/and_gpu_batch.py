@@ -32,9 +32,9 @@ file_name = "batch_1.npz"
 def f_no_breed(f, c, uc):
     return f[0], c[0], uc[0]
 
-f_breed = lambda f, c, uc : ragged_task_evolution.graph_crossover_breed(f, c, uc, [0, 1, 2])
+#f_breed = lambda f, c, uc : ragged_task_evolution.graph_crossover_breed(f, c, uc, [0, 1, 2])
 #f_breed = ragged_task_evolution.pair_breed_swap_all
-#f_breed = f_no_breed
+f_breed = f_no_breed
 
 f_mutate = lambda f, c, uc: ragged_task_evolution.mutate_equal_prob(f, c, uc, mutation_rate)
 
