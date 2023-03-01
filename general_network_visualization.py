@@ -17,26 +17,30 @@ def graph_from_spec(connections):
     return graph
 
 
-def graph_from_ragged_spec(connections, used_connections):
+def graph_from_ragged_spec(connections, used_connections, node_labels=None):
+    if node_labels is None:
+        node_labels = np.arange(start=0, stop=np.shape(connections)[0], step=1)
     g = nx.DiGraph()
-    g.add_nodes_from(np.arange(start=0, stop=np.shape(connections)[0], step=1))
+    g.add_nodes_from(node_labels)
     for i, (c, u) in enumerate(zip(connections, used_connections)):
         this_cons = np.squeeze(c[np.argwhere(u == 1)], -1)
-        g.add_edges_from([(i, x) for x in this_cons])
+        g.add_edges_from([(node_labels[x], node_labels[i]) for x in this_cons])
     return g
 
 
-def influence_graph_from_ragged_spec(functions, connections, used_connections):
+def influence_graph_from_ragged_spec(functions, connections, used_connections, node_labels=None):
+    if node_labels is None:
+        node_labels = np.arange(start=0, stop=np.shape(connections)[0], step=1)
     inf = analysis_util.compute_influence(functions)
     g = nx.DiGraph()
-    g.add_nodes_from(np.arange(start=0, stop=np.shape(connections)[0], step=1))
+    g.add_nodes_from(node_labels)
     for i, (c, u, infs) in enumerate(zip(connections, used_connections, inf)):
         this_cons = np.squeeze(c[np.argwhere(u == 1)], -1)
         this_infs = np.squeeze(infs[np.argwhere(u == 1)], -1)
         edges = []
         for x, w in zip(this_cons, this_infs):
             if w>0:
-                edges.append((x, i, w))
+                edges.append((node_labels[x], node_labels[i], w))
 
         g.add_weighted_edges_from(edges)
     return g
