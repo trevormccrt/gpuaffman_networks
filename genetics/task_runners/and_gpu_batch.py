@@ -21,7 +21,7 @@ n_generations = 50000
 n_memory_timesteps = 10
 
 a = os.getenv("DATA_DIR")
-out_dir = os.path.join(a, "boolean_network_data/and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+out_dir = os.path.join(a, "boolean_network_data/and_evolution_results/rwalk_{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
 checkpointint_dir = os.path.join(out_dir, "checkpoint_data/")
 os.makedirs(checkpointint_dir, exist_ok=False)
@@ -29,8 +29,12 @@ os.makedirs(checkpointint_dir, exist_ok=False)
 
 file_name = "batch_1.npz"
 
+def f_no_breed(f, c, uc):
+    return f[0], c[0], uc[0]
+
 f_breed = lambda f, c, uc : ragged_task_evolution.graph_crossover_breed(f, c, uc, [0, 1, 2])
 #f_breed = ragged_task_evolution.pair_breed_swap_all
+#f_breed = f_no_breed
 
 f_mutate = lambda f, c, uc: ragged_task_evolution.mutate_equal_prob(f, c, uc, mutation_rate)
 
