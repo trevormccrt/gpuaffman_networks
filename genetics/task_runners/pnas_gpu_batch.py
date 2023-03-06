@@ -43,5 +43,5 @@ evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populatio
                                mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
                                tasks.make_4_bit_input_state, tasks.evaluate_pnas_task,
                                f_breed, f_mutate ,
-                               out_dir, file_name, using_cuda=False,
+                               out_dir, file_name, using_cuda=True,
                                checkpointing_freq=500, checkpointing_dir=checkpointint_dir)
