@@ -20,6 +20,9 @@ _MODULAR_6_DESIRED_OUT = np.bitwise_or(np.bitwise_and(np.bitwise_or(_6_BIT_TT[:,
                                                       np.bitwise_or(_6_BIT_TT[:, 2], _6_BIT_TT[:, 3])),
                                        np.bitwise_and(_6_BIT_TT[:, 4], _6_BIT_TT[:, 5]))
 
+_PNAS_DESIRED_OUT = np.bitwise_and(np.bitwise_xor(_4_BIT_TT[:, 0], _4_BIT_TT[:, 1]),
+                                   np.bitwise_xor(_4_BIT_TT[:, 2], _4_BIT_TT[:, 3]))
+
 print("")
 try:
     import cupy as cp
@@ -27,6 +30,7 @@ try:
     _SHARED_AND_DESIRED_OUT_GPU = cp.array(_SHARED_AND_DESIRED_OUT)
     _SEQUENTIAL_AND_DESIERD_OUT_GPU = cp.array(_SEQUENTIAL_AND_DESIERD_OUT)
     _MODULAR_6_DESIRED_OUT_GPU = cp.array(_MODULAR_6_DESIRED_OUT)
+    _PNAS_DESIRED_OUT_GPU = cp.array(_PNAS_DESIRED_OUT)
 
 except:
     pass
@@ -122,5 +126,13 @@ def evaluate_modular_6_task(data):
         desired_out = _MODULAR_6_DESIRED_OUT_GPU
     error_rate = np.mean(np.equal(data[:, :, :, :, 6], desired_out.T), axis=(0, -2))
     return error_rate
+
+
+def evaluate_pnas_task(data):
+    data = np.moveaxis(data, 1, -2)
+    desired_out = _PNAS_DESIRED_OUT
+    if not isinstance(data, np.ndarray):
+        desired_out = _PNAS_DESIRED_OUT_GPU
+    return np.mean(np.equal(data[:, :, :, :, 4], desired_out.T), axis=(0, -1), keepdims=False)
 
 
