@@ -10,7 +10,7 @@ population_size = 70
 keep_best = int(0.4 * population_size)
 n_children = population_size - keep_best
 n_populations = 100
-n_trajectories = 200
+n_trajectories = 15
 noise_prob = 0.01
 mutation_rate = 0.005
 
