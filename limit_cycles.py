@@ -10,6 +10,7 @@ def measure_limit_cycle_lengths(init_state, functions, connections, used_connect
     cycle_start_end = np.zeros((np.shape(init_state)[-2], 2), dtype=np.int64)
     found_cycles = [None] * int(init_state.shape[0])
     connections = np.broadcast_to(connections, (*init_state.shape, connections.shape[-1]))
+    used_connections = np.broadcast_to(used_connections, (*init_state.shape, used_connections.shape[-1]))
     functions = np.broadcast_to(functions, (*init_state.shape, functions.shape[-1]))
     still_evolving = np.arange(start=0, stop=np.shape(init_state)[-2], step=1)
     last_found = 0
