@@ -29,12 +29,13 @@ def natural_computation_search(functions, connectivity, used_connectivity, input
     used_connectivity_flat = np.reshape(used_connectivity, (-1, *used_connectivity.shape[-2:]))
     cycle_lengths, cycle_start_end, num_not_found, _, found_cycles = limit_cycles.measure_limit_cycle_lengths(input_state_flat, functions_flat, connectivity_flat, used_connectivity_flat)
     found_cycles = np.reshape(np.array(found_cycles), input_state.shape[:-1]).T
-    cycle_lengths = np.reshape(cycle_lengths, input_state.shape[:-1]).T
+    cycle_start_end = np.reshape(cycle_start_end, (*input_state.shape[:-1], 2))
+    cycle_start_end = np.swapaxes(cycle_start_end, 0, 1)
     output_nodes = []
     effective_truth_tables = []
     computation_stablilize_time = []
     non_empty_idx = []
-    for i, (all_input_results, lengths) in enumerate(zip(found_cycles, cycle_lengths)):
+    for i, (all_input_results, start_end) in enumerate(zip(found_cycles, cycle_start_end)):
         try:
             frozen_nodes = np.array([np.all(x == x[0], axis=0) for x in all_input_results])
             frozen_vales = np.array([x[0] for x in all_input_results])
@@ -44,7 +45,7 @@ def natural_computation_search(functions, connectivity, used_connectivity, input
             effective_truth_table = frozen_vales[:, comp_idx]
             output_nodes.append(comp_idx)
             effective_truth_tables.append(effective_truth_table)
-            computation_stablilize_time.append(np.max(lengths))
+            computation_stablilize_time.append(np.max(start_end[:, 0]))
             if len(comp_idx):
                 non_empty_idx.append(i)
         except TypeError:
