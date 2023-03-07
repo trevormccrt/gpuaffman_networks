@@ -1,10 +1,10 @@
 import numpy as np
 import cupy as cp
 
-import general_network
+import general_network, ragged_general_network
 
 
-def measure_limit_cycle_lengths(init_state, functions, connections, max_n_iter=1000, verbose=False, dry_term=1000):
+def measure_limit_cycle_lengths(init_state, functions, connections, used_connections=None, max_n_iter=1000, verbose=False, dry_term=1000):
     all_states = np.expand_dims(init_state, 0)
     cycle_lengths = np.zeros(np.shape(init_state)[-2], dtype=np.int64)
     cycle_start_end = np.zeros((np.shape(init_state)[-2], 2), dtype=np.int64)
@@ -18,7 +18,11 @@ def measure_limit_cycle_lengths(init_state, functions, connections, max_n_iter=1
             if i - last_found > dry_term:
                 print("NO NEW CYCLES FOUND, EXITING")
                 break
-            new_state = general_network.state_update(all_states[i, :, :], functions[still_evolving, :, :], connections[still_evolving, :, :])
+            if used_connections is None:
+                new_state = general_network.state_update(all_states[i, :, :], functions[still_evolving, :, :], connections[still_evolving, :, :])
+            else:
+                new_state = ragged_general_network.ragged_k_state_update(all_states[i, :, :], functions[still_evolving, :, :],
+                                                         connections[still_evolving, :, :], used_connections[still_evolving, :, :])
             equal_indicies = np.argwhere(np.all(np.equal(new_state, all_states[:i + 1, :, :]), -1))
             if isinstance(equal_indicies, cp.ndarray):
                 equal_indicies = cp.asnumpy(equal_indicies)

@@ -18,6 +18,20 @@ def test_simple_cycle_lengths():
     np.testing.assert_equal(true_cycles, cycles)
 
 
+def test_ragged():
+    batch_size = 100
+    N = 30
+    k = 2
+    functions = binary_core.random_binary_data((batch_size, N, 1 << k), 0.5)
+    connections = np.random.randint(0, N, (batch_size, N, k))
+    used_connectivity = binary_core.random_binary_data((batch_size, N, k), 0.5)
+    init_states = binary_core.random_binary_data((batch_size, N), 0.5)
+    cycle_lengths, _, num_left, steps_used, _ = limit_cycles.measure_limit_cycle_lengths(init_states, functions,
+                                                                                         connections,
+                                                                                         used_connections=used_connectivity)
+    assert not num_left
+
+
 def test_complex_cycle_lengths():
     batch_size = 100
     N = 30
@@ -63,4 +77,3 @@ def test_found_cycle_validity():
             else:
                 assert np.all(new_state == cycle[0])
             current_state = new_state
-
