@@ -31,8 +31,8 @@ f_breed = lambda f, c, uc : ragged_task_evolution.graph_crossover_breed(f, c, uc
 
 f_mutate = lambda f, c, uc: ragged_task_evolution.mutate_equal_prob(f, c, uc, mutation_rate)
 
-evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
-                               mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
-                               tasks.make_2_bit_input_state, tasks.evaluate_and_task,
-                               f_breed, f_mutate ,
-                               out_dir, file_name, using_cuda=False, checkpointing_freq=10)
+evolution_runners.evolve_random_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
+                                      mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
+                                      tasks.make_2_bit_input_state, tasks.evaluate_and_task,
+                                      f_breed, f_mutate,
+                                      out_dir, file_name, using_cuda=False, checkpointing_freq=10)
