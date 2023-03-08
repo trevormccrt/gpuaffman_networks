@@ -2,6 +2,7 @@ import cupy as cp
 import datetime
 import numpy as np
 import os
+import shutil
 
 from genetics import ragged_task_evolution, evolution_runners, natural_computation
 
@@ -36,6 +37,7 @@ n_memory_timesteps = np.max(data["computation_times"][to_use_start: to_use_end])
 a = os.getenv("DATA_DIR")
 out_dir = os.path.join(a, "boolean_network_data/natural_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
+shutil.copy(input_data_path, os.path.join(out_dir, "original_data.npz"))
 checkpointint_dir = os.path.join(out_dir, "checkpoint_data/")
 os.makedirs(checkpointint_dir, exist_ok=False)
 
