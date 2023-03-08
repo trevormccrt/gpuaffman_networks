@@ -3,7 +3,9 @@ import datetime
 import numpy as np
 import os
 import shutil
+import sys
 
+sys.path.append(os.path.join(os.getenv("HOME"), "gpuaffman_networks/"))
 from genetics import ragged_task_evolution, evolution_runners, natural_computation
 
 input_data_path = os.path.join(os.getenv("DATA_DIR"), "boolean_network_data/naturally_computing_networks/2023-03-08-15-26-26/data.npz")
