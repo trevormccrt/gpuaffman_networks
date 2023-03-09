@@ -57,7 +57,7 @@ keep_best = int(0.4 * population_size)
 n_populations = 100
 n_timesteps = 10
 n_traj = 15
-N = 25
+N = 40
 init_avg_k = 3
 k_max = 4
 noise_prob = 0.01
@@ -82,5 +82,5 @@ used_connectivity = cp.random.binomial(1, init_avg_k / k_max, (n_populations, po
 
 error_rate_calc_time, children_production_calc_time, mutation_calc_time = profile_evolutionary_step(input_state_batched, n_traj, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval, f_breed, n_children, f_mutate)
 
-
+print(error_rate_calc_time)
 print("")

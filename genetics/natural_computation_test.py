@@ -14,7 +14,7 @@ def test_nat_comp():
     connectivity = np.random.randint(0, N, (batch_size, N, k_max)).astype(np.uint8)
     used_connectivity = np.random.binomial(1, avg_k/k_max, (batch_size, N, k_max)).astype(np.bool_)
     output_nodes, effective_truth_tables, computation_stablilize_time, computing_idx =  natural_computation.natural_computation_search(functions, connectivity, used_connectivity, input_bits)
-    ordered_ranks, ordered_tts, ordered_out_nodes, ordered_times, ordered_idx = natural_computation.order_natural_computations_by_rank(output_nodes, effective_truth_tables, computation_stablilize_time, computing_idx)
+    ordered_ranks, ordered_tts, ordered_out_nodes, ordered_in_nodes, ordered_times, ordered_idx = natural_computation.order_natural_computations_by_rank(output_nodes, effective_truth_tables, computation_stablilize_time, computing_idx, input_bits)
     responsible_functions = functions[ordered_idx]
     responsible_connectivity = connectivity[ordered_idx]
     responsible_used_connectivity = used_connectivity[ordered_idx]
@@ -25,4 +25,5 @@ def test_nat_comp():
     final_states = np.swapaxes(states[-1], 0, 1)
     for final_state, desired_tt, output_nodes in zip(final_states, ordered_tts, ordered_out_nodes):
         assert np.all(desired_tt == final_state[:, output_nodes])
+
 

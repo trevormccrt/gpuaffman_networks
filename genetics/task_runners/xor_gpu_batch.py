@@ -30,6 +30,6 @@ dev0 = cp.cuda.Device(0)
 
 file_name = "batch_1.npz"
 with dev0:
-    evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
-                                   mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
-                                   tasks.make_2_bit_input_state, tasks.evaluate_xor_task, out_dir, file_name, True)
+    evolution_runners.evolve_random_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
+                                          mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
+                                          tasks.make_2_bit_input_state, tasks.evaluate_xor_task, out_dir, file_name, True)

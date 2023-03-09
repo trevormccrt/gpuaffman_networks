@@ -38,9 +38,9 @@ f_breed = f_no_breed
 
 f_mutate = lambda f, c, uc: ragged_task_evolution.mutate_equal_prob(f, c, uc, mutation_rate)
 
-evolution_runners.evolve_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
-                               mutation_rate, init_avg_k, n_generations, n_memory_timesteps,
-                               tasks.make_2_bit_input_state, tasks.evaluate_and_task,
-                               f_breed, f_mutate ,
-                               out_dir, file_name, using_cuda=True,
-                               checkpointing_freq=100, checkpointing_dir=checkpointint_dir)
+evolution_runners.evolve_random_batch(N, max_k, population_size, keep_best, n_populations, n_trajectories, noise_prob,
+                                      init_avg_k, n_generations, n_memory_timesteps,
+                                      tasks.make_2_bit_input_state, tasks.evaluate_and_task,
+                                      f_breed, f_mutate,
+                                      out_dir, file_name, using_cuda=True,
+                                      checkpointing_freq=100, checkpointing_dir=checkpointint_dir)
