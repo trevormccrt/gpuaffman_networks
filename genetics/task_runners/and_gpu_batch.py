@@ -43,4 +43,4 @@ evolution_runners.evolve_random_batch(N, max_k, population_size, keep_best, n_po
                                       tasks.make_2_bit_input_state, tasks.evaluate_and_task,
                                       f_breed, f_mutate,
                                       out_dir, file_name, using_cuda=True,
-                                      checkpointing_freq=100, checkpointing_dir=checkpointint_dir, dynamcis_fn=ragged_task_evolution.dynamics_with_connectivity_noise)
+                                      checkpointing_freq=100, checkpointing_dir=checkpointint_dir, dynamcis_fn=ragged_task_evolution.dynamics_with_function_noise)
