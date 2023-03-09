@@ -15,7 +15,8 @@ def dump_population_data(out_dir, file_name, functions, connectivity, used_conne
 
 def evolve_from_spec(input_state_batched, functions, connectivity, used_connectivity, keep_best, n_trajectories,
                      noise_prob, n_generations, timesteps, n_children, f_eval, f_breed, f_mutate,
-                     results_dir, results_fname, using_cuda=False, checkpointing_dir=None, checkpointing_freq=100):
+                     results_dir, results_fname, using_cuda=False, checkpointing_dir=None, checkpointing_freq=100,
+                     dynamcis_fn=ragged_task_evolution.dynamics_with_state_noise):
     N = functions.shape[-2]
     k_max = connectivity.shape[-1]
     n_populations = functions.shape[0]
@@ -32,7 +33,7 @@ def evolve_from_spec(input_state_batched, functions, connectivity, used_connecti
     for generation in range(n_generations):
         functions, connectivity, used_connectivity, population_errors = ragged_task_evolution.evolutionary_step(
             input_state_batched, n_trajectories, functions, connectivity, used_connectivity,
-            timesteps + np.random.randint(0, 5), noise_prob, f_eval, f_breed, n_children, f_mutate)
+            timesteps + np.random.randint(0, 5), noise_prob, f_eval, f_breed, n_children, f_mutate, dynamics_fn=dynamcis_fn)
         if generation % checkpointing_freq == 0:
             print("GENERATION {} ERRORS {}".format(generation, sorted(best_errors)))
             if checkpointing_dir is not None:
@@ -61,7 +62,8 @@ def evolve_from_spec(input_state_batched, functions, connectivity, used_connecti
 
 def evolve_random_batch(N, k_max, population_size, keep_best, n_populations, n_trajectories, noise_prob,
                         init_avg_k, n_generations, timesteps, f_input_state, f_eval, f_breed, f_mutate,
-                        results_dir, results_fname, using_cuda=False, checkpointing_dir=None, checkpointing_freq=100):
+                        results_dir, results_fname, using_cuda=False, checkpointing_dir=None, checkpointing_freq=100,
+                        dynamcis_fn=ragged_task_evolution.dynamics_with_state_noise):
     xp = np
     if using_cuda:
         import cupy
@@ -80,5 +82,5 @@ def evolve_random_batch(N, k_max, population_size, keep_best, n_populations, n_t
     evolve_from_spec(input_state_batched, functions, connectivity, used_connectivity, keep_best, n_trajectories,
                      noise_prob, n_generations, timesteps, n_children, f_eval, f_breed, f_mutate, results_dir,
                      results_fname, using_cuda=using_cuda, checkpointing_dir=checkpointing_dir,
-                     checkpointing_freq=checkpointing_freq)
+                     checkpointing_freq=checkpointing_freq, dynamcis_fn=dynamcis_fn)
 

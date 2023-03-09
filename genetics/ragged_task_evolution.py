@@ -118,7 +118,7 @@ def mutate_equal_prob(functions, connectivity, used_connectivity, mutation_rate)
         mutate_binary(used_connectivity, mutation_rate)
 
 
-def run_dynamics_forward(input_state, functions, connections, used_connections, n_timesteps, p_noise):
+def dynamics_with_state_noise(input_state, functions, connections, used_connections, n_timesteps, p_noise):
     xp = np
     if isinstance(input_state, cp.ndarray):
         xp = cp
@@ -129,19 +129,43 @@ def run_dynamics_forward(input_state, functions, connections, used_connections, 
     return ragged_general_network.ragged_k_state_update(current_state, functions, connections, used_connections)
 
 
+def dynamics_with_function_noise(input_state, functions, connections, used_connections, n_timesteps, p_noise):
+    xp = np
+    if isinstance(input_state, cp.ndarray):
+        xp = cp
+    current_state = input_state
+    for _ in range(n_timesteps):
+        current_state = ragged_general_network.ragged_k_state_update(
+            current_state, np.bitwise_xor(functions, xp.random.binomial(1, p_noise, functions.shape).astype(np.bool_)),
+            connections, used_connections)
+    return current_state
+
+
+def dynamics_with_connectivity_noise(input_state, functions, connections, used_connections, n_timesteps, p_noise):
+    xp = np
+    if isinstance(input_state, cp.ndarray):
+        xp = cp
+    current_state = input_state
+    for _ in range(n_timesteps):
+        current_state = ragged_general_network.ragged_k_state_update(
+            current_state, functions,
+            connections, np.bitwise_xor(used_connections,  xp.random.binomial(1, p_noise, used_connections.shape).astype(np.bool_)))
+    return current_state
+
+
 def evaluate_populations(input_states, n_trajectories, functions, connectivity,
-                         used_connectivity, n_timesteps, noise_prob, f_eval):
+                         used_connectivity, n_timesteps, noise_prob, f_eval, dynamics_fn=dynamics_with_state_noise):
     return f_eval(
-        run_dynamics_forward(np.broadcast_to(np.expand_dims(input_states, 0), (n_trajectories, *input_states.shape)),
+        dynamics_fn(np.broadcast_to(np.expand_dims(input_states, 0), (n_trajectories, *input_states.shape)),
                              functions, connectivity, used_connectivity, n_timesteps, noise_prob))
 
 
-def evolutionary_step(input_states, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval, breeding_fn, n_children, mutation_fn):
+def evolutionary_step(input_states, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval, breeding_fn, n_children, mutation_fn, dynamics_fn=dynamics_with_state_noise):
     n_populations = input_states.shape[-3]
     pop_size = input_states.shape[-2]
     keep_best = pop_size - n_children
 
-    error_rates = evaluate_populations(input_states, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval)
+    error_rates = evaluate_populations(input_states, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, noise_prob, f_eval, dynamics_fn=dynamics_fn)
 
     sorted_error_rates = np.argsort(error_rates, axis=-1)
     expand_sort_error_rates = np.expand_dims(np.expand_dims(sorted_error_rates, -1), -1)
