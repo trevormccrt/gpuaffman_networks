@@ -21,7 +21,7 @@ n_generations = 50000
 n_memory_timesteps = 10
 
 a = os.getenv("DATA_DIR")
-out_dir = os.path.join(a, "boolean_network_data/and_evolution_results/rwalk_{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+out_dir = os.path.join(a, "boolean_network_data/and_evolution_results/{}".format(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
 os.makedirs(out_dir, exist_ok=False)
 checkpointint_dir = os.path.join(out_dir, "checkpoint_data/")
 os.makedirs(checkpointint_dir, exist_ok=False)
@@ -43,4 +43,4 @@ evolution_runners.evolve_random_batch(N, max_k, population_size, keep_best, n_po
                                       tasks.make_2_bit_input_state, tasks.evaluate_and_task,
                                       f_breed, f_mutate,
                                       out_dir, file_name, using_cuda=True,
-                                      checkpointing_freq=100, checkpointing_dir=checkpointint_dir)
+                                      checkpointing_freq=100, checkpointing_dir=checkpointint_dir, dynamcis_fn=ragged_task_evolution.dynamics_with_connectivity_noise)
