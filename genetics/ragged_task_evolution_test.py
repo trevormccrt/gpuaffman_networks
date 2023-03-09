@@ -25,7 +25,9 @@ def test_pair_breeding_function_swap():
     n_children = 7
     data = np.random.randint(0, 20, (batch_size, population_size, org_dim, data_dim))
     first_parents, second_parents = ragged_task_evolution.sample_breeding_pairs(data, n_children)
-    children = ragged_task_evolution.pair_breed_swap(first_parents, second_parents)
+    batch_shape = first_parents.shape[:-1]
+    from_first_mask = np.expand_dims(np.random.binomial(1, 0.5, batch_shape), -1)
+    children = ragged_task_evolution.pair_breed_swap(first_parents, second_parents, from_first_mask)
     assert not np.all(np.equal(children, first_parents))
     assert not np.all(np.equal(children, second_parents))
     for function_batch, children_batch in zip(np.concatenate([first_parents, second_parents], axis=1), children):
