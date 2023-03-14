@@ -12,7 +12,7 @@ def sort_by_performance(input_state, functions, connectivity, used_connectivity,
     errors = np.squeeze(ragged_task_evolution.evaluate_populations(
         input_state, n_trajectories, functions, connectivity, used_connectivity, n_timesteps, p_error, f_eval), -1)
     perf_idx = np.argsort(errors)
-    return functions[perf_idx], connectivity[perf_idx], used_connectivity[perf_idx], errors[perf_idx]
+    return functions[perf_idx], connectivity[perf_idx], used_connectivity[perf_idx], errors[perf_idx], perf_idx
 
 
 def run_dynamics_forward_save_state(input_state, functions, connections, used_connections, n_timesteps, p_noise):
