@@ -4,16 +4,20 @@ import numpy as np
 import binary_core
 
 
+def _uint8_to_binary(data, n_bits=8):
+    return np.unpackbits(np.expand_dims(data, -1), axis=-1, bitorder="little")[..., :n_bits].astype(np.bool_)
+
+
 def test_conversion():
     binary_dimension = 3
-    data_b = binary_core.random_binary_data((20, 10, binary_dimension), 0.5)
+    data_b = np.random.binomial(1, 0.5, (20, 10, binary_dimension)).astype(np.bool_)
     data_u = binary_core.binary_to_uint8(data_b)
-    data_b_re = binary_core.uint8_to_binary(data_u, binary_dimension)
+    data_b_re = _uint8_to_binary(data_u, binary_dimension)
     np.testing.assert_equal(data_b_re, data_b)
 
 
 def test_function_apply():
-    data_b = binary_core.random_binary_data((20, 10, 2), 0.5)
+    data_b = np.random.binomial(1, 0.5, (20, 10, 2)).astype(np.bool_)
     function_and = np.array([False, False, False, True])
     function_or = np.array([False, True, True, True])
     test_and = binary_core.apply_binary_function(data_b, function_and)
@@ -31,7 +35,7 @@ def test_function_apply():
 
 def test_vectorized_function_apply():
     for i in range(10):
-        data_b = binary_core.random_binary_data((2, 2), 0.5)
+        data_b = np.random.binomial(1, 0.5, (2, 2)).astype(np.bool_)
         function_and = np.array([False, False, False, True])
         function_or = np.array([False, True, True, True])
         vectorized_functions = np.stack([function_and, function_or], axis=0)
@@ -42,8 +46,8 @@ def test_vectorized_function_apply():
 
 def test_truth_table_columns():
     binary_dimension = 3
-    tt =  binary_core.truth_table_columns(binary_dimension)
-    test_binary = binary_core.random_binary_data((20, 10, binary_dimension), 0.5)
+    tt = binary_core.truth_table_inputs(binary_dimension)
+    test_binary = np.random.binomial(1, 0.5, (20, 10, binary_dimension)).astype(np.bool_)
     test_u = binary_core.binary_to_uint8(test_binary)
     tt_samples = np.take(tt, test_u, axis=0)
     np.testing.assert_equal(test_binary, tt_samples)
@@ -62,5 +66,6 @@ def test_cuda():
     result_cp = binary_core.apply_binary_function(data_cp, functions_cp)
 
     np.testing.assert_equal(result_np, cp.asnumpy(result_cp))
+
 
 
