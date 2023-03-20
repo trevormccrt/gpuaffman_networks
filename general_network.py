@@ -1,3 +1,4 @@
+"""Dynamics for a general Boolean Network with N nodes and k connections per node."""
 import numpy as np
 
 import binary_core

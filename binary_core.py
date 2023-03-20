@@ -1,3 +1,4 @@
+"""Binary functions relevant to Boolean networks."""
 import numpy as np
 
 _BYTE_CONV = np.array([1 << x for x in range(8)], dtype=np.uint8)
