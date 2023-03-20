@@ -23,3 +23,7 @@ See the [example notebook](https://github.com/trevormccrt/gpuaffman_networks/blo
 
 If you find my package useful, please cite me!
 
+```console
+ @misc{mccourt_2023, title={GPU accelerated Kauffman networks}, url={https://github.com/trevormccrt/gpuaffman_networks}, journal={gpuaffman_networks}, author={McCourt, Trevor}, year={2023}, month={Mar}} 
+```
+
