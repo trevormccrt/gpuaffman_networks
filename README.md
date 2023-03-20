@@ -9,6 +9,8 @@ of arbitrary batches of networks on both CPUs and GPUs.
 
 # Installation
 
+Install using the provided setup.py (instructions [here](https://www.activestate.com/resources/quick-reads/how-to-manually-install-python-packages/)). In summary, in the directory ```gpuaffman_networks/```, run:
+
 ```console
 pip install .
 ```
