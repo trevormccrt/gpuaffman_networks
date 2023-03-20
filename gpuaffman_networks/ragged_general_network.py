@@ -1,7 +1,7 @@
 """Dynamics for a ragged Boolean Network with N nodes k or less connections per node."""
 import numpy as np
 
-import binary_core, general_network
+from gpuaffman_networks import binary_core, general_network
 
 
 def apply_ragged_k_binary_function(binary_data, functions, used_connections):

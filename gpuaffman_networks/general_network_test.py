@@ -2,7 +2,7 @@ import cupy as cp
 import numpy as np
 
 
-import general_network, linear_network
+from gpuaffman_networks import general_network, linear_network
 
 
 def test_prepare_input():

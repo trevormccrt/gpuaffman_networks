@@ -1,7 +1,6 @@
 import numpy as np
 
-
-import linear_network
+from gpuaffman_networks import linear_network
 
 
 def test_update_1d_local_periodic():

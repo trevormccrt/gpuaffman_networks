@@ -1,7 +1,7 @@
 import cupy as cp
 import numpy as np
 
-import binary_core
+from gpuaffman_networks import binary_core
 
 
 def _uint8_to_binary(data, n_bits=8):

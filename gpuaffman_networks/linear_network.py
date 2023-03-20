@@ -1,7 +1,7 @@
 """Dynamics for a Boolean network with linear topology and nearest-neighbour interactions."""
 import numpy as np
 
-import binary_core
+from gpuaffman_networks import binary_core
 
 
 def state_update(state, functions):

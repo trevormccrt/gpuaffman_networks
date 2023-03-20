@@ -2,7 +2,7 @@ import cupy as cp
 import numpy as np
 
 
-import general_network, ragged_general_network
+from gpuaffman_networks import general_network, ragged_general_network
 
 
 def test_ragged_k_state_update_extra_dims():

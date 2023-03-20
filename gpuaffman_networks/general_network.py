@@ -1,7 +1,7 @@
 """Dynamics for a general Boolean Network with N nodes and k connections per node."""
 import numpy as np
 
-import binary_core
+from gpuaffman_networks import binary_core
 
 
 def get_update_inputs(states, connections):
