@@ -24,6 +24,14 @@ See the [example notebook](https://github.com/trevormccrt/gpuaffman_networks/blo
 If you find my package useful, please cite me!
 
 ```console
- @misc{mccourt_2023, title={GPU accelerated Kauffman networks}, url={https://github.com/trevormccrt/gpuaffman_networks}, journal={gpuaffman_networks}, author={McCourt, Trevor}, year={2023}, month={Mar}} 
+ @misc{McCourt2023,
+  author = {McCourt, T},
+  title = {gpuaffman_networks: GPU accelerated Kauffman networks},
+  year = {2023},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/charlespwd/project-title}},
+  commit = {4f57d6a0e4c030202a07a60bc1bb1ed1544bf679}
+}
 ```
 
