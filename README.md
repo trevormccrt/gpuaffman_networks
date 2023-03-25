@@ -26,11 +26,13 @@ If you find my package useful, please cite me!
 ```console
  @misc{McCourt2023,
   author = {McCourt, T},
-  title = {gpuaffman_networks: GPU accelerated Kauffman networks},
+  title = {GPU accelerated Kauffman networks},
   year = {2023},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/trevormccrt/gpuaffman_networks}}
+  howpublished = {\url{https://github.com/trevormccrt/gpuaffman_networks}},
 }
 ```
+
+
 
