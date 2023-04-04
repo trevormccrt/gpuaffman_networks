@@ -24,13 +24,13 @@ See the [example notebook](https://github.com/trevormccrt/gpuaffman_networks/blo
 If you find my package useful, please cite me!
 
 ```console
- @misc{McCourt2023,
-  author = {McCourt, T},
-  title = {GPU accelerated Kauffman networks},
-  year = {2023},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/trevormccrt/gpuaffman_networks}},
+@misc{mccourt2023noisy,
+      title={Noisy dynamical systems evolve error correcting codes and modularity}, 
+      author={Trevor McCourt and Ila R. Fiete and Isaac L. Chuang},
+      year={2023},
+      eprint={2303.14448},
+      archivePrefix={arXiv},
+      primaryClass={q-bio.PE}
 }
 ```
 
